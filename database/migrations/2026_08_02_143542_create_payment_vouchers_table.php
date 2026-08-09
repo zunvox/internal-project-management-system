@@ -14,7 +14,7 @@ return new class extends Migration
             $table->foreignId('reviewed_by')
                 ->nullable()
                 ->constrained('users')
-                ->nullOnDelete();
+                ->restrictOnDelete();
 
             $table->foreignId('claim_id')
                 ->nullable()

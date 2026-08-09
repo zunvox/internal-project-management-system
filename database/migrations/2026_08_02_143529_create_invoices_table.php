@@ -41,7 +41,7 @@ return new class extends Migration
             $table->foreignId('reviewed_by')
                 ->nullable()
                 ->constrained('users')
-                ->nullOnDelete();
+                ->restrictOnDelete();
 
             $table->timestamp('reviewed_at')->nullable();
 

@@ -49,7 +49,7 @@ class LoginController extends Controller
             $user = Auth::user();
 
             //Step 4: Prevent inactive user from entering the system
-            if (! $user->isActive)
+            if (! $user->isActive())
                 {
                     Auth::logout();
 

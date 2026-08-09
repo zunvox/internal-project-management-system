@@ -11,24 +11,21 @@ use Illuminate\View\View;
 
 class UserManagementController extends Controller
 {
+
+    //List all users in the system.
     public function index(): View
     {
         $users = User::query()
             ->orderBy('name')
-            ->paginate(15);
+            ->paginate(10);
 
-        return view('admin.users.index', compact('users'));
+        return view('admin.users-index', compact('users'));
     }
 
-    public function updateStatus(
-        Request $request,
-        User $user
-    ): RedirectResponse {
+    public function updateStatus(Request $request, User $user): RedirectResponse 
+    {
         $validated = $request->validate([
-            'status' => [
-                'required',
-                Rule::in(['Active', 'Inactive']),
-            ],
+            'status' => ['required', Rule::in(['Active', 'Inactive'])],
         ]);
 
         // Prevent an admin from deactivating their own account accidentally.

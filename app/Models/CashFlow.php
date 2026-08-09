@@ -36,9 +36,6 @@ class CashFlow extends Model
 
     public function category(): BelongsTo
     {
-        return $this->belongsTo(
-            CashFlowCategory::class,
-            'flowcategory_id'
-        );
+        return $this->belongsTo(CashFlowCategory::class, 'flowcategory_id');
     }
 }

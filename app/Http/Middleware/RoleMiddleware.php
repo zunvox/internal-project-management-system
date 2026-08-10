@@ -13,9 +13,9 @@ class RoleMiddleware
      *
      * @param  Closure(Request): (Response)  $next
      */
-    public function handle(Request $request, Closure $next): Response
+    public function handle(Request $request, Closure $next, string $role): Response
     {
-        //Confirm that a user is authenticated
+        //Confirm that the user is logged in
         if (! $request->user())
             {
                 return redirect()->route('login');
@@ -28,7 +28,7 @@ class RoleMiddleware
                 }
 
             //Confirm the user's role matches the required role.
-            if ($request->user()->role() !== $role)
+            if ($request->user()->role !== $role)
                 {
                     abort(403, 'You are not authorised to access this page.');
                 }

@@ -3,7 +3,7 @@
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\ForgotPasswordController;
 use App\Http\Controllers\Auth\ResetPasswordController;
-use App\Http\Controllers\Admin;
+use App\Http\Controllers\Admin\UserManagementController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -38,21 +38,72 @@ Route::middleware('guest')->group(function () {
 */
 
 Route::middleware('auth')->group(function () {
+
+    /*Logout*/
+
     Route::post('/logout', [LoginController::class, 'destroy'])
         ->name('logout');
 
-    Route::get('/admin/dashboard', function () {
-        return view('admin.dashboard');
-    })->name('admin.dashboard');
 
-    Route::get('/developer/dashboard', function () {
-        return view('developer.dashboard');
-    })->name('developer.dashboard');
+    /*Admin Routes*/
+
+    Route::middleware('role:Admin')
+        ->prefix('admin')
+        ->name('admin.')
+        ->group(function () {
+
+            /*Admin Dashboard*/
+
+            Route::get('/dashboard', function () {
+                return view('admin.dashboard');
+            })->name('dashboard');
+
+
+            /*User Management*/
+
+            // User list
+            Route::get('/users', [UserManagementController::class, 'index']
+            )->name('users.index');
+
+
+            // Add User page
+            Route::get('/users/create', [UserManagementController::class, 'create']
+            )->name('users.create');
+
+
+            // Save new user
+            Route::post('/users', [UserManagementController::class, 'store']
+            )->name('users.store');
+
+
+            // View one user
+            Route::get('/users/{user}', [UserManagementController::class, 'show']
+            )->name('users.show');
+
+
+            // Edit User page
+            Route::get('/users/{user}/edit', [UserManagementController::class, 'edit']
+            )->name('users.edit');
+
+
+            // Save edited user
+            Route::put('/users/{user}', [UserManagementController::class, 'update']
+            )->name('users.update');
+        });
+
+
+    /*Developer Routes*/
+
+    Route::middleware('role:Developer')
+        ->prefix('developer')
+        ->name('developer.')
+        ->group(function () {
+
+            Route::get('/dashboard', function () {
+                return view('developer.dashboard');
+            })->name('dashboard');
+        });
 });
-
-Route::get('/admin/users-index', function() {
-    return view('users-index');
-})->name('users-list');
 
 /*
 **Default route

@@ -14,6 +14,7 @@
     max-width:1100px;
     margin:0 auto;
     padding:16px 24px 64px;
+    height: 900px;
   }
  
   .back-link{
@@ -74,6 +75,13 @@
     display:flex;
     align-items:center;
     justify-content:center;
+    overflow: hidden;
+  }
+
+  .profile-image{
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
   }
  
   .profile-name-row{
@@ -131,7 +139,7 @@
   }
  
   .field-full-name{ grid-column:1; }
-  .field-dev-id{ grid-column:2; }
+  .field-user-id{ grid-column:2; }
   .field-email{ grid-column:3; }
   .field-username{ grid-column:4; }
  
@@ -159,6 +167,7 @@
   .btn-update{
     border:1px solid #2B6FFF;
     color:#2B6FFF;
+    text-decoration: none;
   }
  
   .btn-update:hover{
@@ -174,8 +183,8 @@
     @include('admin.partials.admin-nav')
 
 <div class ="stage"> 
-    <div class="page">
-    <a class="back-link" href="#">&larr; Back to Manage User</a>
+  <div class="page">
+    <a class="back-link" href="{{  route('admin.users.index') }}">&larr; Back to Manage User</a>
     
     <div class="profile-card">
         <h1 class="card-title">User Profile</h1>
@@ -184,66 +193,90 @@
         <h2 class="section-label">Profile Picture</h2>
     
         <div class="profile-picture-row">
-        <div class="profile-avatar-lg">A</div>
-        <div>
-            <div class="profile-name-row">
-            <span class="name">AfiqM</span>
-            <span class="role-badge">Developer</span>
-            </div>
-            <div class="member-since">Member since July 2027</div>
-        </div>
+
+          <div class="profile-avatar-lg">
+            @if ($user->profile_picture)
+            <img src="{{ asset('storage/' . $user->profile_picture) }}" alt="Profile Picture" class="profile-image">
+          @else
+            {{ strtoupper(substr($user->username ?: $user->fullname, 0, 1)) }}
+          @endif</div>
+
+          <div>
+              <div class="profile-name-row">
+                <span class="name">{{  $user->username ?: $user->fullname }}</span>
+                <span class="role-badge">{{  $user->role }}</span>
+              </div>
+            <div class="member-since">Member since {{ $user->created_at->format('F Y') }}</div>
+          </div>
         </div>
     
         <h2 class="section-label">Personal Info</h2>
         <hr class="divider">
     
         <div class="info-grid">
-        <div class="info-field field-full-name">
-            <span class="label">Full Name</span>
-            <span class="value">Afiq Muzakkir Bin Azizul Karim</span>
-        </div>
-    
-        <div class="info-field field-dev-id">
-            <span class="label">Developer ID</span>
-            <span class="value">DEV-00214</span>
-        </div>
-    
-        <div class="info-field field-email">
-            <span class="label">Email Address</span>
-            <span class="value">afiqmuzakkir@gmail.com</span>
-        </div>
-    
-        <div class="info-field field-username">
-            <span class="label">Username</span>
-            <span class="value">AfiqM</span>
-        </div>
-    
-        <div class="info-field field-role">
-            <span class="label">Role</span>
-            <span class="value">Developer</span>
-        </div>
-    
-        <div class="info-field field-phone">
-            <span class="label">Phone Number</span>
-            <span class="value">+60 12-345-6789</span>
-        </div>
-    
-        <div class="info-field field-address">
-            <span class="label">Address</span>
-            <span class="value">144-1, Jalan Burma, 10050, Bandaraya George Town, Pulau Pinang, Malaysia</span>
-        </div>
-    
-        <div class="info-field field-status">
-            <span class="label">Status</span>
-            <span class="value">Active</span>
-        </div>
+          <div class="info-field field-full-name">
+              <span class="label">Full Name</span>
+              <span class="value">{{ $user->fullname}}</span>
+          </div>
+      
+          <div class="info-field field-user-id">
+              <span class="label">{{ $user->role === 'Admin' ? 'Admin ID' : 'Developer ID' }}</span>
+              <span class="value">{{ $user->userid }}</span>
+          </div>
+      
+          <div class="info-field field-email">
+              <span class="label">Email Address</span>
+              <span class="value">{{  $user->email }}</span>
+          </div>
+      
+          <div class="info-field field-username">
+              <span class="label">Username</span>
+              <span class="value">{{  $user->username }}</span>
+          </div>
+      
+          <div class="info-field field-role">
+              <span class="label">Role</span>
+              <span class="value">{{ $user->role }}</span>
+          </div>
+      
+          <div class="info-field field-phone">
+              <span class="label">Phone Number</span>
+              <span class="value">{{ $user->phone ?: '-' }}</span>
+          </div>
+      
+          <div class="info-field field-address">
+              <span class="label">Address</span>
+              <span class="value">{{ $user->address }}</span>
+          </div>
+      
+          <div class="info-field field-status">
+              <span class="label">Status</span>
+              <span class="value">{{ $user->status }}</span>
+          </div>
         </div>
     
         <div class="card-actions">
-        <button type="button" class="btn btn-update">Update</button>
+          <a href="{{  route('admin.users.edit', $user) }}" class="btn btn-update">Update</a>
         </div>
     </div>
+  </div>
 </div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function()
+{
+    const profileImage = document.querySelector('.profile-image');
+
+    if(profileImage)
+    {
+      profileImage.addEventListener('error',function()
+      {
+        this.style.display = 'none';
+      });
+    }
+});
+
+  </script>
 
 </body>
 

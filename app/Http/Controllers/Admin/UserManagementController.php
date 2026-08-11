@@ -27,7 +27,8 @@ class UserManagementController extends Controller
                 $query->where(function ($userQuery) use ($search) 
                 {
                     $userQuery
-                        ->where('name', 'like', "%{$search}%")
+                        ->where('username', 'like', "%{$search}%")
+                        ->orWhere('fullname','like',"%{$search}%")
                         ->orWhere('email', 'like', "%{$search}%")
                         ->orWhere('phone', 'like', "%{$search}%");
                 });
@@ -48,7 +49,7 @@ class UserManagementController extends Controller
             }
 
         $users = $query
-            ->orderBy('name')
+            ->orderBy('fullname')
             ->paginate(10)
             ->withQueryString();
 

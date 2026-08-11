@@ -206,22 +206,35 @@
 
     <div class ="stage"> 
     <div class="page">
-    <a class="back-link" href="#">&larr; Back to Manage User</a>
+    <a class="back-link" href="{{ route('admin.users.show', $user) }}">&larr; Back to User Profile</a>
     
     <div class="profile-card">
+      <form method= "POST" action ="{{ 'route(admin.users.update)', $user }}" enctype="multipart/form-data">
+
+          @csrf
+          @method('PUT')
+
         <h1 class="card-title">User Profile</h1>
         
         <hr class ="divider">
         <h2 class="section-label">Profile Picture</h2>
     
         <div class="profile-picture-row">
-        <div class="profile-avatar-lg">A</div>
+          <div class="profile-avatar-lg">
+            @if ($user->profile_picture)
+              <img src="{{ asset('storage/' . $user->profile_picture) }}" alt="Profile Picture" class="profile-image">
+            @else
+              {{ strtoupper(substr($user->username ?: $user->fullname, 0, 1)) }}
+            @endif
+          </div>
+        </div>
+        
         <div>
             <div class="profile-name-row">
-            <span class="name">AfiqM</span>
-            <span class="role-badge">Developer</span>
+            <span class="name">{{ $user->username ?: $user->fullname}}</span>
+            <span class="role-badge">{{ $user->role }}</span>
             </div>
-            <div class="member-since">Member since July 2027</div>
+            <div class="member-since">Member since {{ $user->created_at->format('F Y') }}</div>
         </div>
         </div>
     
@@ -231,55 +244,57 @@
         <div class="form-grid">
         <div class="form-field field-full-name">
              <label for="full_name">Full Name</label>
-                <input id="full_name" type="text" value="Afiq Muzakkir Bin Azizul Karim">
+                <input id="full_name" type="text" value="{{  old('fullname', $user->fullname) }}">
         </div>
     
         <div class="form-field field-dev-id">
             <label for="dev_id">Developer ID</label>
-                <input id="dev_id" type="text" value="DEV-00214">
+                <input id="dev_id" type="text" value="{{  old('userid', $user->userid) }}">
         </div>
     
         <div class="form-field field-email">
            <label for="email">Email Address</label>
-                <input id="email" type="email" value="afiqmuzakkir@gmail.com">
+                <input id="email" type="email" value="{{  old('email', $user->email) }}">
         </div>
     
         <div class="form-field field-username">
            <label for="username">Username</label>
-                <input id="username" type="text" value="AfiqM">
+                <input id="username" type="text" value="{{  old('username', $user->username) }}">
         </div>
     
         <div class="form-field field-role">
            <label for="role">Role</label>
-                <select id="role">
-                <option value="developer" selected>Developer</option>
+                <select id="role" name="role" required>
+                <option value="Developer"{{ old('role', $user->role) === 'Developer' ? 'selected' : '' }}>Developer</option>
+                <option value="Admin"{{ old('role', $user->role) === 'Admin' ? 'selected' : '' }}>Admin</option>
                 <option value="admin">Admin</option>
                 </select>
         </div>
     
         <div class="form-field field-phone">
            <label for="phone">Phone Number</label>
-                <input id="phone" type="text" value="+60 12-345-6789">
+                <input id="phone" type="text" value="{{ old('phone', $user->phone) }}">
         </div>
     
         <div class="form-field field-address">
              <label for="address">Address</label>
-                <textarea id="address">144-1, Jalan Burma, 10050, Bandaraya George Town, Pulau Pinang, Malaysia</textarea>
+                <textarea id="address">{{old('address', $user->address)}}</textarea>
         </div>
 
         <div class="form-field field-status">
           <label for="status">Status</label>
-          <select id="status">
-            <option value="Active" selected>Active</option>
-            <option value="Inactive">Inactive</option>
+          <select id="status" name="status' required">
+            <option value="Active" {{ old('status', $user->status) === 'Active' ? 'selected' : '' }}>Active</option>
+            <option value="Inactive" {{ old('status', $user->status) === 'Inactive' ? 'selected' : '' }}>Inactive</option>
           </select>
         </div>
 
         </div>
     
         <div class="card-actions">
-        <button type="button" class="btn btn-update">Update</button>
+        <button type="submit" class="btn btn-update">Update</button>
         </div>
+      </form>
     </div>
 </div>
 

@@ -21,7 +21,7 @@
     flex-direction:column;
     font-family:'Inter',system-ui,sans-serif;
     color:black;
-    height: 800px;
+    height: 900px;
   }
 
   /* Top bar */
@@ -44,7 +44,7 @@
     display:flex;
     align-items:center;
     justify-content:center;
-    padding:48px 24px;
+    padding:0px 0px;
     background-image: url(https://img.magnific.com/free-photo/vivid-blurred-colorful-wallpaper-background_58702-3883.jpg?semt=ais_test_b&w=740&q=80);
     background-repeat:no-repeat;
     background-size: cover;

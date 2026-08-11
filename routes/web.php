@@ -105,6 +105,10 @@ Route::middleware('auth')->group(function () {
         });
 });
 
+Route::get('/preview-user', function () {
+    return view('admin.edit-user');
+});
+
 /*
 **Default route
 */

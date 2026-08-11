@@ -1,0 +1,138 @@
+
+*{
+    box-sizing:border-box;
+}
+  html, body{
+    height:100%;
+}
+
+  body{
+    margin:0;
+    display:flex;
+    flex-direction:column;
+    font-family:'Inter',system-ui,sans-serif;
+    color:black;
+    height: 900px;
+  }
+
+  .stage{
+    flex: 1;
+    display: flex;
+    align-items: stretch;
+    justify-content: flex-start;
+    padding: 0;
+    background-image: url(https://img.magnific.com/free-photo/vivid-blurred-colorful-wallpaper-background_58702-3883.jpg?semt=ais_test_b&w=740&q=80);
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-position: center;
+  }
+
+/* ---------- Topbar ---------- */
+
+.topbar{
+    background:black;
+    padding:16px 0;
+    text-align:center;
+  }
+
+  .topbar-brand{
+    font-size:17px;
+    font-weight:700;
+    letter-spacing:0.08em;
+    color:#5B8DEF;
+    text-transform:uppercase;
+  }
+
+.topbar-right{
+  grid-column:0;
+  display:flex;
+  justify-content:flex-end;
+}
+
+
+.profile-btn{
+    position:absolute;
+  display:flex;
+  align-items:center;
+  gap:6px;
+  background:none;
+  border:none;
+  font-size:15px;
+  padding: 0.5px 20px;
+  border-radius:5px;
+  cursor:pointer;
+  transition:background 0.15s ease;
+}
+
+.profile-btn:hover{
+  background:rgba(255,255,255,0.08);
+}
+
+.profile-avatar{
+  width:25px;
+  height:25px;
+  border-radius:50%;
+  background:white;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  overflow:hidden;
+}
+
+.profile-name{
+  color:white;
+  font-size:14px;
+  font-weight:600;
+}
+
+/* ---------- Navigation bar ---------- */
+
+.navbar{
+  background:white;
+  border-bottom:1px solid black;
+  display:flex;
+  justify-content:center;
+}
+
+.nav-list{
+  list-style:none;
+  display:flex;
+  margin:0;
+  padding:0;
+  width:100%;
+  max-width:1400px;
+}
+
+.nav-item{
+  flex:1;
+  text-align:center;
+  border-right:0px solid #ffffff;
+}
+
+.nav-link{
+  display:block;
+  padding:18px 12px;
+  font-size:17px;
+  font-weight:500;
+  letter-spacing:0.03em;
+  color:#101828;
+  text-decoration:none;
+  text-transform:uppercase;
+}
+
+.nav-link:hover{
+  font-weight:700;
+}
+
+/* Active tab — pokes up over the bottom border like a selected tab */
+.nav-item.active{
+  border:0px solid #d0d5dd;
+  border-bottom:4px solid #6897FF;
+  margin-bottom:-2px;
+  background:white;
+}
+
+.nav-item.active .nav-link{
+  color:#101828;
+  font-weight:700;
+}

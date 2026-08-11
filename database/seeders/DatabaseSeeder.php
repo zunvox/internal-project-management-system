@@ -14,7 +14,9 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
         User::create([
-            'name' => 'System Admin',
+            'userid' => 'ADM-0001',
+            'fullname' => 'System Admin',
+            'username' => 'SysAdmin',
             'email' => 'admin@example.com',
             'phone' => '0123456789',
             'password' => 'password',
@@ -23,7 +25,9 @@ class DatabaseSeeder extends Seeder
         ]);
 
         User::create([
-            'name' => 'Test Developer',
+            'userid' => 'DEV-0001',
+            'fullname' => 'Test Developer',
+            'username' => 'TesDev',
             'email' => 'developer@example.com',
             'phone' => '0123456788',
             'password' => 'password',
@@ -32,7 +36,9 @@ class DatabaseSeeder extends Seeder
         ]);
 
         User::create([
-            'name' => 'Inactive Developer',
+            'userid' => 'Dev-0002',
+            'fullname' => 'Inactive Developer',
+            'username' => 'InacDev',
             'email' => 'inactive@example.com',
             'phone' => '0111111111',
             'password' => 'password',

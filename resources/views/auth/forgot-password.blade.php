@@ -21,7 +21,7 @@
     flex-direction:column;
     font-family:'Inter',system-ui,sans-serif;
     color:black;
-    height: 800px;
+    height: 900px;
   }
 
   .topbar{

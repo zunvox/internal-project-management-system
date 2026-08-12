@@ -22,7 +22,7 @@
     flex-direction:column;
     font-family:'Inter',system-ui,sans-serif;
     color:black;
-    height: 900px;
+    min-height: 100pv;
     
   }
 

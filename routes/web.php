@@ -106,7 +106,7 @@ Route::middleware('auth')->group(function () {
 });
 
 Route::get('/preview-user', function () {
-    return view('admin.view-user');
+    return view('admin.create-user');
 });
 
 /*

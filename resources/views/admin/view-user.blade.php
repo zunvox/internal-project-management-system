@@ -157,7 +157,7 @@
  
   .btn{
     padding:10px 28px;
-    border-radius:999px;
+    border-radius:5px;
     font-size:14px;
     font-weight:600;
     cursor:pointer;
@@ -165,8 +165,8 @@
   }
  
   .btn-update{
-    border:1px solid #2B6FFF;
-    color:#2B6FFF;
+    border:1px solid #019BEF;
+    color:#019BEF;
     text-decoration: none;
   }
  

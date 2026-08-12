@@ -17,19 +17,6 @@
     padding:16px 24px 64px;
   }
  
-  .back-link{
-    display:inline-block;
-    font-size:15px;
-    color:#101828;
-    text-decoration:none;
-    margin-bottom:16px;
-  }
- 
-  .back-link:hover{
-    text-decoration:none;
-    font-weight: 600;
-  }
- 
   /* Profile card */
  
   .profile-card{
@@ -60,32 +47,58 @@
  
   /* Profile picture section */
   .profile-picture-row{
-    display:flex;
-    align-items:center;
-    gap:16px;
-    margin-bottom:24px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 24px;
   }
  
   .profile-avatar-lg{
-    width:92px;
-    height:92px;
-    min-width:56px;
-    border-radius:50%;
-    border:2px solid black;
-    display:flex;
-    align-items:center;
-    justify-content:center;
+    width: 92px;
+    height: 92px;
+    min-width: 92px;
+    border-radius: 50%;
+    border: 2px solid black;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+  }
+
+  .profile-image{
+    width:100%;
+    height:100%;
+    object-fit:cover;
   }
  
   .profile-name-row{
-    display:flex;
-    align-items:center;
-    gap:10px;
+    display:f lex;
+    align-items: center;
+    gap: 10px;
   }
  
   .profile-name-row .name{
     font-size:25px;
     font-weight:700;
+  }
+
+  .change-photo-wrapper{
+    margin-left:auto;
+  }
+
+  .btn-change-photo{
+    padding:8px 18px;
+    background:white;
+    border:1px solid #019BEF;
+    color:#019BEF;
+    border-radius:5px;
+    font-size:14px;
+    font-weight:600;
+    cursor:pointer;
+  }
+
+  .btn-change-photo:hover{
+    background: #EFF4FF;
   }
  
   .role-badge{
@@ -136,20 +149,20 @@
   .form-field select,
   .form-field textarea{
     width:100%;
-    padding:10px 14px;
-    font-size:13px;
+    padding: 10px 14px;
+    font-size: 13px;
     font-family: 'Inter',system-ui,sans-serif;
-    color:black;
+    color: black;
     background-color:#ffffff;
     border:1px solid #D0D5DD;
-    border-radius:10px;
-    outline:none;
+    border-radius: 10px;
+    outline: none;
     transition:border-color 0.15s ease, box-shadow 0.15s ease;
   }
 
   .form-field textarea{
     resize:vertical;
-    min-height:64px;
+    min-height: 64px;
     font-family:'Inter',system-ui,sans-serif;
   }
 
@@ -173,23 +186,36 @@
 
  
   .card-actions{
-    display:flex;
-    justify-content:flex-end;
-    margin-top:28px;
+    grid-column: 1 / -1;
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    margin-top: 28px;
   }
  
   .btn{
-    padding:10px 28px;
-    border-radius:999px;
-    font-size:14px;
-    font-weight:600;
-    cursor:pointer;
-    background:white;
+    padding: 10px 28px;
+    border-radius: 5px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    background: white;
+  }
+
+  .btn-cancel{
+    padding: 10px 45px;
+    text-decoration: none;
+    border: 1px solid #DC0000;
+    color: #DC0000;
+  }
+
+  .btn-cancel:hover{
+    background: #ffdfdf;
   }
  
   .btn-update{
-    border:1px solid #2B6FFF;
-    color:#2B6FFF;
+    border: 1px solid #019BEF;
+    color:#019BEF;
   }
  
   .btn-update:hover{
@@ -206,10 +232,9 @@
 
     <div class ="stage"> 
     <div class="page">
-    <a class="back-link" href="{{ route('admin.users.show', $user) }}">&larr; Back to User Profile</a>
     
     <div class="profile-card">
-      <form method= "POST" action ="{{ 'route(admin.users.update)', $user }}" enctype="multipart/form-data">
+      <form id="edit-user-form" method="POST" action="{{ route('admin.users.update', $user) }}" enctype="multipart/form-data">
 
           @csrf
           @method('PUT')
@@ -220,83 +245,149 @@
         <h2 class="section-label">Profile Picture</h2>
     
         <div class="profile-picture-row">
-          <div class="profile-avatar-lg">
-            @if ($user->profile_picture)
-              <img src="{{ asset('storage/' . $user->profile_picture) }}" alt="Profile Picture" class="profile-image">
-            @else
-              {{ strtoupper(substr($user->username ?: $user->fullname, 0, 1)) }}
-            @endif
-          </div>
-        </div>
-        
-        <div>
-            <div class="profile-name-row">
-            <span class="name">{{ $user->username ?: $user->fullname}}</span>
-            <span class="role-badge">{{ $user->role }}</span>
+
+            <div class="profile-avatar-lg">
+              @if ($user->profile_picture)
+                <img id="profile-preview" src="{{ asset('storage/' . $user->profile_picture) }}" alt="Profile Picture" class="profile-image">
+              @else
+              <div id="profile-initial">
+                {{ strtoupper(substr($user->username ?: $user->fullname, 0, 1)) }}
+              </div>
+
+              <img id="profile-preview" src="" alt="Profile Preview" class="profile-image" style="display:none;">
+              @endif
             </div>
-            <div class="member-since">Member since {{ $user->created_at->format('F Y') }}</div>
-        </div>
+
+            <div>
+              <div class="profile-name-row">
+                <span class="name">{{ $user->username ?: $user->fullname}}</span>
+                <span class="role-badge">{{ $user->role }}</span>
+              </div>
+
+              <div class="member-since">Member since {{ $user->created_at->format('F Y') }}</div>
+            </div>
+
+            <div class="change-photo-wrapper">
+              <input id="profile-picture-input" type="file" name="profile_picture" accept=".jpg,.jpeg,.png,.webp" hidden>
+
+              <button type="button" class="btn-change-photo" id="change-photo-btn">Change Photo</button>
+            </div>
         </div>
     
         <h2 class="section-label">Personal Info</h2>
         <hr class="divider">
     
         <div class="form-grid">
-        <div class="form-field field-full-name">
-             <label for="full_name">Full Name</label>
-                <input id="full_name" type="text" value="{{  old('fullname', $user->fullname) }}">
-        </div>
-    
-        <div class="form-field field-dev-id">
-            <label for="dev_id">Developer ID</label>
-                <input id="dev_id" type="text" value="{{  old('userid', $user->userid) }}">
-        </div>
-    
-        <div class="form-field field-email">
-           <label for="email">Email Address</label>
-                <input id="email" type="email" value="{{  old('email', $user->email) }}">
-        </div>
-    
-        <div class="form-field field-username">
-           <label for="username">Username</label>
-                <input id="username" type="text" value="{{  old('username', $user->username) }}">
-        </div>
-    
-        <div class="form-field field-role">
-           <label for="role">Role</label>
-                <select id="role" name="role" required>
-                <option value="Developer"{{ old('role', $user->role) === 'Developer' ? 'selected' : '' }}>Developer</option>
-                <option value="Admin"{{ old('role', $user->role) === 'Admin' ? 'selected' : '' }}>Admin</option>
-                <option value="admin">Admin</option>
-                </select>
-        </div>
-    
-        <div class="form-field field-phone">
-           <label for="phone">Phone Number</label>
-                <input id="phone" type="text" value="{{ old('phone', $user->phone) }}">
-        </div>
-    
-        <div class="form-field field-address">
-             <label for="address">Address</label>
-                <textarea id="address">{{old('address', $user->address)}}</textarea>
-        </div>
+          <div class="form-field field-full-name">
+              <label for="full_name">Full Name</label>
+                  <input id="full_name" name="fullname" type="text" value="{{  old('fullname', $user->fullname) }}">
+          </div>
+      
+          <div class="form-field field-dev-id">
+              <label for="dev_id" id="user-id-label">{{  $user->role === 'Admin' ? 'Admin ID' : 'Developer ID' }}</label>
+                  <input id="dev_id" name="userid" type="text" value="{{  old('userid', $user->userid) }}">
+          </div>
+      
+          <div class="form-field field-email">
+            <label for="email">Email Address</label>
+                  <input id="email" name="email" type="email" value="{{  old('email', $user->email) }}">
+          </div>
+      
+          <div class="form-field field-username">
+            <label for="username">Username</label>
+                  <input id="username" name="username" type="text" value="{{  old('username', $user->username) }}">
+          </div>
+      
+          <div class="form-field field-role">
+            <label for="role">Role</label>
+                  <select id="role" name="role" required>
+                  <option value="Developer"{{ old('role', $user->role) === 'Developer' ? 'selected' : '' }}>Developer</option>
+                  <option value="Admin"{{ old('role', $user->role) === 'Admin' ? 'selected' : '' }}>Admin</option>
+                  </select>
+          </div>
+      
+          <div class="form-field field-phone">
+            <label for="phone">Phone Number</label>
+                  <input id="phone" name="phone" type="text" value="{{ old('phone', $user->phone) }}">
+          </div>
+      
+          <div class="form-field field-address">
+              <label for="address">Address</label>
+                  <textarea id="address" name="address">{{old('address', $user->address)}}</textarea>
+          </div>
 
-        <div class="form-field field-status">
-          <label for="status">Status</label>
-          <select id="status" name="status' required">
-            <option value="Active" {{ old('status', $user->status) === 'Active' ? 'selected' : '' }}>Active</option>
-            <option value="Inactive" {{ old('status', $user->status) === 'Inactive' ? 'selected' : '' }}>Inactive</option>
-          </select>
-        </div>
-
+          <div class="form-field field-status">
+            <label for="status">Status</label>
+            <select id="status" name="status" required>
+              <option value="Active" {{ old('status', $user->status) === 'Active' ? 'selected' : '' }}>Active</option>
+              <option value="Inactive" {{ old('status', $user->status) === 'Inactive' ? 'selected' : '' }}>Inactive</option>
+            </select>
+          </div>
         </div>
     
         <div class="card-actions">
-        <button type="submit" class="btn btn-update">Update</button>
+        <a href="{{ route('admin.users.show', $user) }}" class="btn btn-cancel">Cancel</a>
+        <button type="submit" class="btn btn-update">Save Changes</button>
         </div>
       </form>
     </div>
 </div>
+
+<script>
+  const changePhotoBtn = document.getElementById('change-photo-btn');
+  const profilePictureInput = document.getElementById('profile-picture-input');
+  const profilePreview = document.getElementById('profile-preview');
+  const profileInitial = document.getElementById('profile-initial');
+  const roleSelect = document.getElementById('role');
+  const userIdLabel = document.getElementById('user-id-label');
+  const editUserForm = document.getElementById('edit-user-form');
+
+  roleSelect.addEventListener('change', function()
+  {
+    if (this.value === 'Admin')
+    {
+        userIdLabel.textContent = "Admin ID";
+    }
+    else
+    {
+      userIdLabel.textContent = "Developer ID";
+    }
+  });
+
+  editUserForm.addEventListener('submit', function(event)
+  {
+    const confirmed = confirm("Are you sure you want to update this user's information?");
+    
+    if (!confirmed)
+    {
+      event.preventDefault();
+    }
+  });
+
+  changePhotoBtn.addEventListener('click', function () 
+  {
+    profilePictureInput.click();
+  });
+
+  profilePictureInput.addEventListener('change', function () 
+  {
+      const file = this.files[0];
+
+      if (file) 
+      {
+          const imageUrl = URL.createObjectURL(file);
+
+          profilePreview.src = imageUrl;
+          profilePreview.style.display = 'block';
+
+          if (profileInitial) 
+          {
+              profileInitial.style.display = 'none';
+          }
+        }
+  });
+
+  </script>
 
 </body>
 

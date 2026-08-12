@@ -72,7 +72,7 @@
   }
  
   .profile-name-row{
-    display:f lex;
+    display:flex;
     align-items: center;
     gap: 10px;
   }

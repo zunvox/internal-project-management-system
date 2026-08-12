@@ -68,11 +68,11 @@ class UserManagementController extends Controller
     public function store(Request $request): RedirectResponse
     {
         $validated = $request->validate([
-            'userid' => ['required', 'string', 'max:30',],
+            'userid' => ['required', 'string', 'max:30', 'unique:users,userid',],
             
             'fullname' => ['required', 'string', 'max:130',],
 
-            'username' => ['nullable','string','max:150',],
+            'username' => ['nullable','string','max:150','unique:users,username',],
 
             'email' => ['required','email','max:255','unique:users,email',],
 
@@ -84,7 +84,7 @@ class UserManagementController extends Controller
 
             'status' => ['required',Rule::in(['Active', 'Inactive']),],
 
-            'password' => ['required','string','min:8','confirmed',],
+            'password' => ['required','string','min:8',],
 
             'profile_picture' => ['nullable','image','mimes:jpg,jpeg,png,webp','max:2048',],
         ]);
@@ -102,7 +102,7 @@ class UserManagementController extends Controller
         User::create($validated);
 
         return redirect()
-            ->route('admin.users.index')
+            ->route('admin.users.create')
             ->with('success', 'User account created successfully.');
     }
 

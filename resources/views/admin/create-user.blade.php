@@ -111,6 +111,22 @@
     color:#101828;
   }
 
+/* Validation error */
+
+  .validation-errors{
+    background:#FEF3F2;
+    border:1px solid #F04438;
+    color:#B42318;
+    padding:12px 16px;
+    border-radius:10px;
+    margin-bottom:16px;
+}
+
+.validation-errors ul{
+    margin:0;
+    padding-left:20px;
+}
+
   /* Form card */
 
   .form-card{
@@ -174,13 +190,14 @@
   }
 
   .field-full-name{ grid-column:1; }
-  .field-dev-id{ grid-column:2; }
+  .field-user-id{ grid-column:2; }
   .field-email{ grid-column:3; }
   .field-username{ grid-column:4; }
 
   .field-role{ grid-column:1; }
   .field-phone{ grid-column:2; }
   .field-status{ grid-column:3; }
+  .field-password{ grid-column:4; }
   
   .field-address{ grid-column:1 / span 2; }
 
@@ -203,6 +220,7 @@
 
   .btn-cancel{
     border:1px solid #F04438;
+    text-decoration:none;
     color:#F04438;
   }
 
@@ -228,92 +246,201 @@
     @include('admin.partials.admin-nav')
 
 <div class = "stage">
-    <div class="page">
+  <div class="page">
         <h1 class="page-title">Add New User</h1>
 
         <div class="summary-card">
             <div class="summary-top">
-            <span class="summary-name">AfiqM</span>
-            <span class="summary-separator">|</span>
-            <span class="summary-id">DEV-00214</span>
-            <span class="role-badge">Developer</span>
+              <span class="summary-name" id="summary-name">Username</span>
+              <span class="summary-separator">|</span>
+              <span class="summary-id" id="summary-id"></span>
+              <span class="role-badge" id="summary-role">Developer</span>
             </div>
 
             <div class="summary-body">
-            <div class="summary-avatar">A</div>
+            <div class="summary-avatar" id="summary-avatar">?</div>
 
-            <dl class="summary-details">
-                <dt>Full Name</dt>
-                <dd>: Afiq Muzakkir Bin Azizul Karim</dd>
+              <dl class="summary-details">
+                  <dt>Full Name</dt>
+                  <dd id="summary-fullname">: -</dd>
 
-                <dt>Phone Number</dt>
-                <dd>: +60 12-345-6789</dd>
+                  <dt>Phone Number</dt>
+                  <dd id="summary-phone">: -</dd>
 
-                <dt>Email Address</dt>
-                <dd>: afiqmuzakkir@gmail.com</dd>
+                  <dt>Email Address</dt>
+                  <dd id="summary-email">: -</dd>
 
-                <dt>Address</dt>
-                <dd>: 144-1, Jalan Burma, 10050, Bandaraya George Town, Pulau Pinang, Malaysia</dd>
-            </dl>
+                  <dt>Address</dt>
+                  <dd id="summary-address">: -</dd>
+              </dl>
             </div>
         </div>
 
-        <div class="form-card">
-            <form class="form-grid">
-            <div class="form-field field-full-name">
-                <label for="full_name">Full Name</label>
-                <input id="full_name" type="text" value="Afiq Muzakkir Bin Azizul Karim">
-            </div>
+        <form id="create-user-form" method="POST" action="{{ route('admin.users.store') }}" enctype="multipart/form-data" autocomplete="off">
+          @csrf
 
-            <div class="form-field field-dev-id">
-                <label for="dev_id">Developer ID</label>
-                <input id="dev_id" type="text" value="DEV-00214">
+          @if ($errors->any())
+            <div class="validation-errors">
+              <ul>
+                @foreach ($errors->all() as $error)
+                  <li>{{ $error }}</li>
+                @endforeach
+              </ul>
             </div>
+          @endif
 
-            <div class="form-field field-email">
-                <label for="email">Email Address</label>
-                <input id="email" type="email" value="afiqmuzakkir@gmail.com">
-            </div>
+          <div class="form-card">
+              <div class="form-grid">
 
-            <div class="form-field field-username">
-                <label for="username">Username</label>
-                <input id="username" type="text" value="AfiqM">
-            </div>
+              <div class="form-field field-full-name">
+                  <label for="full_name">Full Name</label>
+                  <input id="full_name" name="fullname" type="text" value="{{  old('fullname') }}" required>
+              </div>
 
-            <div class="form-field field-role">
-                <label for="role">Role</label>
-                <select id="role">
-                <option value="developer" selected>Developer</option>
-                <option value="admin">Admin</option>
-                </select>
-            </div>
+              <div class="form-field field-user-id">
+                  <label for="dev_id" id="user-id-label"> {{ old('role') === 'Admin' ? 'Admin ID' : 'Developer ID' }} </label>
+                  <input id="dev_id" name="userid" type="text" value="{{  old('userid') }}" required>
+              </div>
 
-            <div class="form-field field-phone">
-                <label for="phone">Phone Number</label>
-                <input id="phone" type="text" value="+60 12-345-6789">
-            </div>
+              <div class="form-field field-email">
+                  <label for="email">Email Address</label>
+                  <input id="email" name="email" type="email" value="{{  old('email') }}" required>
+              </div>
 
-            <div class="form-field field-status">
-                <label for="status">Status</label>
-                <select id="status">
-                <option value="Active" selected>Active</option>
-                <option value="Inactive">Inactive</option>
-                </select>
-            </div>
+              <div class="form-field field-username">
+                  <label for="username">Username</label>
+                  <input id="username" name="username" type="text" value="{{ old('username') }}" autocomplete="off">
+              </div>
 
-            <div class="form-field field-address">
-                <label for="address">Address</label>
-                <textarea id="address">144-1, Jalan Burma, 10050, Bandaraya George Town, Pulau Pinang, Malaysia</textarea>
-            </div>
+              <div class="form-field field-role">
+                  <label for="role">Role</label>
+                  <select id="role" name="role" required>
+                  <option value="Developer" {{ old('role', 'Developer') === 'Developer' ? 'selected' : '' }}>Developer</option>
+                  <option value="Admin" {{ old('role') === 'Admin' ? 'selected' : '' }}>Admin</option>
+                  </select>
+              </div>
 
-            <div class="form-actions">
-                <button type="button" class="btn btn-cancel">Cancel</button>
-                <button type="submit" class="btn btn-create">Create</button>
+              <div class="form-field field-phone">
+                  <label for="phone">Phone Number</label>
+                  <input id="phone" name="phone" type="text" value="{{ old('phone') }}">
+              </div>
+
+              <div class="form-field field-status">
+                  <label for="status">Status</label>
+                  <select id="status" name="status" required>
+                  <option value="Active" {{ old('status', 'Active') === 'Active' ? 'selected' : '' }}>Active</option>
+                  <option value="Inactive" {{ old('status') === 'Inactive' ? 'selected' : '' }}>Inactive</option>
+                  </select>
+              </div>
+
+              <div class="form-field field-password">
+                  <label for="password">Password</label>
+                  <input id="password" name="password" type="password" autocomplete="new-password" required>
+              </div>
+
+              <div class="form-field field-address">
+                  <label for="address">Address</label>
+                  <textarea id="address" name="address">{{ old('address') }}</textarea>
+              </div>
+
+              <div class="form-actions">
+                  <a href="{{ route('admin.users.index') }}" class="btn btn-cancel">Cancel</a>
+                  <button type="submit" class="btn btn-create">Create</button>
+              </div>
             </div>
-            </form>
-        </div>
-    </div>
+          </div>
+        </form>
+  </div>
 </div>
+
+<script>
+  const roleSelect = document.getElementById('role');
+  const userIdLabel = document.getElementById('user-id-label');
+  const createUserForm = document.getElementById('create-user-form');
+
+  const fullnameInput = document.getElementById('full_name');
+  const useridInput = document.getElementById('dev_id');
+  const emailInput = document.getElementById('email');
+  const usernameInput = document.getElementById('username');
+  const phoneInput = document.getElementById('phone');
+  const addressInput = document.getElementById('address');
+  const summaryName = document.getElementById('summary-name');
+  const summaryId = document.getElementById('summary-id');
+  const summaryRole = document.getElementById('summary-role');
+  const summaryAvatar = document.getElementById('summary-avatar');    
+  const summaryFullname = document.getElementById('summary-fullname');
+  const summaryPhone = document.getElementById('summary-phone');
+  const summaryEmail = document.getElementById('summary-email');
+  const summaryAddress = document.getElementById('summary-address');
+
+    roleSelect.addEventListener('change', function () 
+    {
+        if (this.value === 'Admin') 
+        {
+            userIdLabel.textContent = 'Admin ID';
+            summaryRole.textContent = 'Admin';
+        } 
+        else 
+        {
+            userIdLabel.textContent = 'Developer ID';
+            summaryRole.textContent = 'Developer';
+        }
+    });
+
+    createUserForm.addEventListener('submit', function (event)
+    {
+      const confirmed = confirm("Are you sure you want to create this user?");
+
+      if (!confirmed)
+      {
+        event.preventDefault();
+      }
+    });
+
+    fullnameInput.addEventListener('input', function () 
+      {
+        summaryFullname.textContent = ': ' + (this.value || '-');
+      });
+
+    useridInput.addEventListener('input', function () 
+      {
+        summaryId.textContent = this.value || 'Developer ID';
+      });
+
+    phoneInput.addEventListener('input', function () 
+      {
+        summaryPhone.textContent = ': ' + (this.value || '-');
+      });
+
+    emailInput.addEventListener('input', function () 
+      {
+        summaryEmail.textContent = ': ' + (this.value || '-');
+      });
+
+    addressInput.addEventListener('input', function () 
+      {
+        summaryAddress.textContent = ': ' + (this.value || '-');
+      });
+
+    usernameInput.addEventListener('input', function () 
+    {
+        const username = this.value.trim();
+
+        summaryName.textContent = username || 'Username';
+
+        if (username) 
+        {
+          summaryAvatar.textContent = username.charAt(0).toUpperCase();
+        } 
+        else 
+        {
+          summaryAvatar.textContent = '?';
+        }
+    });
+
+
+
+  </script>
 
 </body>
 

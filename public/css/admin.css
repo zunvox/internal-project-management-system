@@ -130,6 +130,7 @@
   border-bottom:4px solid #6897FF;
   margin-bottom:-2px;
   background:white;
+  box-shadow:0 4px 14px rgba(43,111,255,0.35);
 }
 
 .nav-item.active .nav-link{

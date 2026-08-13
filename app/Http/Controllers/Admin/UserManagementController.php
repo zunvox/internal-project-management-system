@@ -17,8 +17,9 @@ class UserManagementController extends Controller
     public function index(Request $request): View
     {
         $query = User::query();
+        // dd($query);
 
-        /* Search (by name,email,phone*/
+        /*Search (by name,email,phone*/
 
         if ($request->filled('search')) 
             {
@@ -49,11 +50,24 @@ class UserManagementController extends Controller
             }
 
         $users = $query
-            ->orderBy('fullname')
+            ->orderByDesc('id')
             ->paginate(10)
             ->withQueryString();
 
-        return view('admin.users-index', compact('users'));
+            $allCount = User::count();
+
+            $developerCount = User::where('role', 'Developer')->count();
+
+            $adminCount = User::where('role', 'Admin')->count();
+
+            $activeCount = User::where('status', 'Active')->count();
+
+            $inactiveCount = User::where('status', 'Inactive')->count();
+
+            // var_dump($users);
+            // exit
+
+        return view('admin.users-index', compact('users', 'allCount', 'developerCount', 'adminCount', 'activeCount', 'inactiveCount'));
     }
 
     /* Display the Add User page.*/

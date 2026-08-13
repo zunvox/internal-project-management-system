@@ -13,7 +13,7 @@
       <a class="nav-link" href="#">Cash Flow</a>
     </li>
     <li class="nav-item active">
-      <a class="nav-link" href="#">Manage User</a>
+      <a class="nav-link" href="{{ route('admin.users.index') }}">Manage User</a>
     </li>
   </ul>
 </nav>

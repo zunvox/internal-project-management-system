@@ -191,15 +191,16 @@
 
   .field-full-name{ grid-column:1; }
   .field-user-id{ grid-column:2; }
-  .field-email{ grid-column:3; }
-  .field-username{ grid-column:4; }
+  .field-username{ grid-column:3; }
+  .field-role{ grid-column:4; }
 
-  .field-role{ grid-column:1; }
+  .field-email{ grid-column:1; }
   .field-phone{ grid-column:2; }
-  .field-status{ grid-column:3; }
-  .field-password{ grid-column:4; }
+  .field-password{ grid-column:3; }
+  .field-status{ grid-column:4; }
   
   .field-address{ grid-column:1 / span 2; }
+  .field-password-confirmation{ grid-column:3; }
 
   .form-actions{
     grid-column:1 / -1;
@@ -207,6 +208,34 @@
     justify-content:flex-end;
     gap:12px;
     margin-top:8px;
+  }
+
+  .password-wrapper{
+    position:relative;
+    width:100%;
+  }
+
+  .password-wrapper input{
+      width:100%;
+      padding-right:44px;
+      box-sizing:border-box;
+  }
+
+  .password-toggle{
+      position:absolute;
+      right:12px;
+      top:50%;
+      transform:translateY(-50%);
+
+      border:none;
+      background:none;
+      padding:4px;
+      cursor:pointer;
+      font-size:16px;
+
+      display:flex;
+      align-items:center;
+      justify-content:center;
   }
 
   .btn{
@@ -302,11 +331,6 @@
                   <input id="dev_id" name="userid" type="text" value="{{  old('userid') }}" required>
               </div>
 
-              <div class="form-field field-email">
-                  <label for="email">Email Address</label>
-                  <input id="email" name="email" type="email" value="{{  old('email') }}" required>
-              </div>
-
               <div class="form-field field-username">
                   <label for="username">Username</label>
                   <input id="username" name="username" type="text" value="{{ old('username') }}" autocomplete="off">
@@ -320,9 +344,22 @@
                   </select>
               </div>
 
+              <div class="form-field field-email">
+                  <label for="email">Email Address</label>
+                  <input id="email" name="email" type="email" value="{{  old('email') }}" required>
+              </div>
+
               <div class="form-field field-phone">
                   <label for="phone">Phone Number</label>
                   <input id="phone" name="phone" type="text" value="{{ old('phone') }}">
+              </div>
+
+              <div class="form-field field-password">
+                  <label for="password">Password</label>
+                  <div class="password-wrapper">
+                    <input id="password" name="password" type="password" autocomplete="new-password" required>
+                    <button type="button" class="password-toggle" data-target="password" aria-label="Show password">👁</button>
+                  </div>
               </div>
 
               <div class="form-field field-status">
@@ -333,14 +370,22 @@
                   </select>
               </div>
 
-              <div class="form-field field-password">
-                  <label for="password">Password</label>
-                  <input id="password" name="password" type="password" autocomplete="new-password" required>
-              </div>
-
               <div class="form-field field-address">
                   <label for="address">Address</label>
                   <textarea id="address" name="address">{{ old('address') }}</textarea>
+              </div>
+
+              <div class="form-field field-password-confirmation">
+                  <label for="password_confirmation">Confirm Password</label>
+                  <div class="password-wrapper">
+                    <input id="password_confirmation" name="password_confirmation" type="password" autocomplete="new-password" required>
+                    <button type="button" class="password-toggle" data-target="password_confirmation" aria-label="Show password">👁</button>
+                  </div>
+
+                  @error('password')
+                      <span class="field-error">{{ $message }}</span>
+                  @enderror
+
               </div>
 
               <div class="form-actions">
@@ -357,6 +402,7 @@
   const roleSelect = document.getElementById('role');
   const userIdLabel = document.getElementById('user-id-label');
   const createUserForm = document.getElementById('create-user-form');
+  const passwordToggleButtons = document.querySelectorAll('.password-toggle');
 
   const fullnameInput = document.getElementById('full_name');
   const useridInput = document.getElementById('dev_id');
@@ -436,6 +482,26 @@
         {
           summaryAvatar.textContent = '?';
         }
+    });
+
+    passwordToggleButtons.forEach(function (button) 
+    {
+      button.addEventListener('click', function () 
+      {
+          const targetId = this.dataset.target;
+          const passwordInput = document.getElementById(targetId);
+
+          if (passwordInput.type === 'password') 
+          {
+              passwordInput.type = 'text';
+              this.setAttribute('aria-label', 'Hide password');
+          }
+          else 
+          {
+              passwordInput.type = 'password';
+              this.setAttribute('aria-label', 'Show password');
+          }
+      });
     });
 
 

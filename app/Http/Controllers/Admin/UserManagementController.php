@@ -98,7 +98,7 @@ class UserManagementController extends Controller
 
             'status' => ['required',Rule::in(['Active', 'Inactive']),],
 
-            'password' => ['required','string','min:8',],
+            'password' => ['required','string','min:8', "confirmed"],['password.confirmed' => 'The password confirmation does not match.',],
 
             'profile_picture' => ['nullable','image','mimes:jpg,jpeg,png,webp','max:2048',],
         ]);

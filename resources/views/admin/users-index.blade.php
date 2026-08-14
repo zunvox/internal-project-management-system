@@ -405,23 +405,10 @@
 
               <div class="pagination">
 
-                @if ($users->onFirstPage())
-              <button class="page-btn" type="button" disabled> < </button>
-
-              @else
-              <a href="{{ $users->previousPageUrl() }}" class="page-btn"> < </a>
-              @endif
 
               @for ($page = 1; $page <= $users->lastPage(); $page++)
               <a href="{{ $users->url($page) }}" class="page-btn {{  $users->currentPage() === $page ? 'active' : '' }}">{{ $page }}</a>
               @endfor
-
-              @if ($users->hasMorePages())
-              <a href="{{ $users->nextPageUrl() }}" class="page-btn"> > </a>
-
-              @else
-              <button class="page-btn" type="button" disabled> > </button>
-              @endif
 
             @endif
             </div>

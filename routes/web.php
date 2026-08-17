@@ -4,21 +4,21 @@ use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\ForgotPasswordController;
 use App\Http\Controllers\Auth\ResetPasswordController;
 use App\Http\Controllers\Admin\UserManagementController;
+use App\Http\Controllers\Admin\AdminProjectController;
+use App\Http\Controllers\DeveloperProjectController;
 use Illuminate\Support\Facades\Route;
 
-/*
-**These routes are only for users who are not logged in.
-*/
+/*These routes are only for users who are not logged in.*/
 
 Route::middleware('guest')->group(function () {
     Route::get('/login', [LoginController::class, 'create'])
-        ->name('login');
+    ->name('login');
 
     Route::post('/login', [LoginController::class, 'store'])
-        ->name('login.store');
-    /*
-    **These routes are for users who have forgotten their password
-    */
+    ->name('login.store');
+
+/*These routes are for users who have forgotten their password*/
+
     Route::get('/forgot-password', [ForgotPasswordController::class, 'create'])
     ->name('password.request');
 
@@ -26,7 +26,7 @@ Route::middleware('guest')->group(function () {
     ->name('password.email');
 
     Route::get('/reset-password/{token}', [ResetPasswordController::class, 'create'])
-        ->name('password.reset');
+    ->name('password.reset');
 
     Route::post('/reset-password', [ResetPasswordController:: class, 'store'])
     ->name('password.update');
@@ -42,15 +42,15 @@ Route::middleware('auth')->group(function () {
     /*Logout*/
 
     Route::post('/logout', [LoginController::class, 'destroy'])
-        ->name('logout');
+    ->name('logout');
 
 
     /*Admin Routes*/
 
     Route::middleware('role:Admin')
-        ->prefix('admin')
-        ->name('admin.')
-        ->group(function () {
+    ->prefix('admin')
+    ->name('admin.')
+    ->group(function () {
 
             /*Admin Dashboard*/
 
@@ -89,29 +89,58 @@ Route::middleware('auth')->group(function () {
             // Save edited user
             Route::put('/users/{user}', [UserManagementController::class, 'update']
             )->name('users.update');
-        });
 
+            /*Admin Project*/
+
+            //Display project list
+            Route::get('/projects', [AdminProjectController::class, 'index'])
+            ->name('projects.index');
+
+            //Create project page
+            Route::get('/projects/create', [AdminProjectController::class, 'create'])
+            ->name('projects.create');
+
+            //Save new project
+            Route::post('/projects', [AdminProjectController::class, 'store'])
+            ->name('projects.store');
+
+            //Edit project page
+            Route::get('/projects/{project}/edit', [AdminProjectController::class, 'edit'])
+            ->name('projects.edit');
+
+            //Update project page
+            Route::put('/projects/{project}', [AdminProjectController::class, 'update'])
+            ->name('projects.update');
+
+            //Delete project page
+            Route::delete('/projects/{project}', [AdminProjectController::class, 'destroy'])
+            ->name('projects.destroy');
+        });
 
     /*Developer Routes*/
 
     Route::middleware('role:Developer')
-        ->prefix('developer')
-        ->name('developer.')
-        ->group(function () {
+    ->prefix('developer')
+    ->name('developer.')
+    ->group(function () {
 
-            Route::get('/dashboard', function () {
-                return view('developer.dashboard');
-            })->name('dashboard');
+            Route::get('/dashboard', function () {return view('developer.dashboard');})
+            ->name('dashboard');
+
+            /*Project Management*/
+
+            Route::get('/projects', [DeveloperProjectController::class, 'index'])
+            ->name('projects.index');
         });
 });
+
+/*Preview Route*/
 
 Route::get('/preview-user', function () {
     return view('admin.create-user');
 });
 
-/*
-**Default route
-*/
+/*Default route*/
 
 Route::get('/', function () {
     return redirect()->route('login');

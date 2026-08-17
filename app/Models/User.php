@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Database\Factories\UserFactory;
+use App\Models\Project;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -55,7 +56,7 @@ class User extends Authenticatable
         return $this->belongsToMany
         (
         Project::class,
-        'project_user',
+        'project_assignments',
         'user_id',
         'project_id'
         );

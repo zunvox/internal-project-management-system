@@ -145,6 +145,8 @@ class AdminProjectController extends Controller
             $validated['developers']
         );
 
+        $project->touch();
+
         return redirect()
         ->route('admin.projects.index')
         ->with('success', 'Project updated successfully,');

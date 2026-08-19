@@ -21,7 +21,7 @@
   }
 
   .page{
-    width: 100%;
+    width: 90%;
     max-width: 1400px;
     margin:0 auto;
     padding:28px 24px 64px;
@@ -32,7 +32,7 @@
     display:flex;
     align-items:center;
     justify-content:space-between;
-    margin-bottom:20px;
+    margin-bottom:10px;
   }
 
   .page-title{
@@ -44,7 +44,7 @@
   .btn{
     border:none;
     border-radius:10px;
-    font-size:14px;
+    font-size:12px;
     font-weight:500;
     cursor:pointer;
   }
@@ -85,8 +85,8 @@
     gap:6px;
     background:none;
     border:none;
-    padding:10px 0;
-    font-size:16px;
+    padding:6px 10px;
+    font-size:12px;
     color:#475467;
     cursor:pointer;
     border-bottom:2px solid transparent;
@@ -101,6 +101,14 @@
     color:#101828;
     font-weight:700;
     border-bottom:2px solid #2B6FFF;
+    translate: 0px 0px;
+    transition: translate 0.1s ease-in;
+    width:10%;
+    height:10%;
+  }
+
+  .filter-tab.active:hover{
+    translate: 0px -5px;
   }
 
   .filter-count{
@@ -128,15 +136,15 @@
   }
 
   .search-box svg{
-    width:16px;
-    height:16px;
+    width:12px;
+    height:12px;
     fill:#98A2B3;
   }
 
   .search-box input{
     border:none;
     outline:none;
-    font-size:13px;
+    font-size:10px;
     font-family:'Inter',system-ui,sans-serif;
     color:black;
     width:100%;
@@ -147,8 +155,8 @@
   }
 
   .search-box svg{
-    width:18px;
-    height:18px;
+    width:14px;
+    height:14px;
 
   }
 
@@ -182,11 +190,13 @@
   }
 
   tbody td{
-    padding:14px 12px;
-    font-size:16px;
+    padding:10px 12px;
+    font-size:14px;
     color:#101828;
     border-bottom:1px solid #F2F4F7;
   }
+
+
 
   tbody tr:last-child td{
     border-bottom:none;
@@ -222,7 +232,7 @@
     display:inline-block;
     padding:4px 16px;
     border-radius:999px;
-    font-size:12px;
+    font-size:11px;
     font-weight:600;
   }
 

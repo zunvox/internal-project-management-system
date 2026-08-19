@@ -87,7 +87,7 @@ class DatabaseSeeder extends Seeder
             'phone' => '0000000000',
             'password' => 'password',
             'role' => 'Developer',
-            'status' => 'Inactive',
+            'status' => 'Active',
         ]);
 
         User::create([
@@ -109,7 +109,7 @@ class DatabaseSeeder extends Seeder
             'phone' => '0000000000',
             'password' => 'password',
             'role' => 'Developer',
-            'status' => 'Inactive',
+            'status' => 'Active',
         ]);
 
         User::create([

@@ -414,7 +414,7 @@
     background:#FEE4E2;
   }
 
-    </style>
+  </style>
 
 </head>
 

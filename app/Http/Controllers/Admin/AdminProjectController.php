@@ -149,7 +149,7 @@ class AdminProjectController extends Controller
 
         return redirect()
         ->route('admin.projects.index')
-        ->with('success', 'Project updated successfully,');
+        ->with('success', 'Project updated successfully.');
     }
 
     public function destroy(Project $project): RedirectResponse
@@ -158,7 +158,7 @@ class AdminProjectController extends Controller
 
         return redirect()
         ->route('admin.projects.index')
-        ->with('success', 'Project deleted successfully');
+        ->with('success', 'Project deleted successfully.');
     }
 
 

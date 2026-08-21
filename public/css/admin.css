@@ -21,7 +21,7 @@
     align-items: stretch;
     justify-content: flex-start;
     padding: 0;
-    /* background-image: url(https://img.magnific.com/free-photo/vivid-blurred-colorful-wallpaper-background_58702-3883.jpg?semt=ais_test_b&w=740&q=80); */
+    background-image: url(https://img.magnific.com/free-photo/vivid-blurred-colorful-wallpaper-background_58702-3883.jpg?semt=ais_test_b&w=740&q=80);
     background-repeat: no-repeat;
     background-size: cover;
     background-position: center;
@@ -108,17 +108,10 @@
   flex:1;
   text-align:center;
   border-right:0px solid #ffffff;
-  transition:translate 0.2s ease-in, opacity 1s ease-in;
-  translate: 0px 0px;
-  opacity: 0.5;
 }
 
 .nav-item:hover{
-  translate: 0px 8px;
   border-bottom:4px solid #6897FF;
-  margin-bottom:-5px;
-  box-shadow:0 4px 14px rgba(43,111,255,0.35);
-  opacity:1;
 }
 
 .nav-link{
@@ -140,8 +133,6 @@
   margin-bottom:-5px;
   background:white;
   box-shadow:0 4px 14px rgba(43,111,255,0.35);
-  translate: 0px 8px;
-  transition: translate 0.5s ease-in;
 }
 
 .nav-item.active .nav-link{

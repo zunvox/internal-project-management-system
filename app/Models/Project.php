@@ -60,4 +60,9 @@ class Project extends Model
     {
         return $this->hasMany(Claim::class, 'project_id');
     }
+    
+    public function milestones(): HasMany
+    {
+        return $this->hasMany(ProjectMilestone::class);
+    }
 }

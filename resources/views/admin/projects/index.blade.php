@@ -11,9 +11,11 @@
 <style>
 
 .page{
+    width:100%;
     max-width:1400px;
     margin:0 auto;
     padding:18px 38px 0;
+    box-sizing:border-box;
   }
  
   .page-header{
@@ -33,7 +35,7 @@
   }
  
   .btn-primary{
-    background:#2B6FFF;
+    background:#019BEF;
     color:white;
     border:none;
     padding:8px 18px;
@@ -42,10 +44,12 @@
     font-weight:500;
     cursor:pointer;
     box-shadow:none;
+    text-decoration:none;
+    display:inline-block;
   }
  
   .btn-primary:hover{
-    background:#1f5ae0;
+    background:rgb(56, 111, 239);
   }
  
   /* ---------- Search ---------- */
@@ -86,6 +90,13 @@
     border-color:#3538CD;
     box-shadow:0 0 0 4px rgba(53, 56, 205, 0.14);
   }
+
+  .no-search-results{
+    font-size:11px;
+    color:#98A2B3;
+    text-align:center;
+    padding:16px 8px;
+}
  
   /* ---------- Board ---------- */
  
@@ -174,7 +185,7 @@
     padding:0;
     overflow:hidden;
     box-shadow:0 5px 10px rgba(43,111,255,0.28);
-
+    transition:transform 0.15s ease;
     flex-shrink:0;
   }
  
@@ -191,6 +202,16 @@
 
   .project-card.selected .project-card-header{
     background:#2B6FFF;
+}
+
+.project-card-link{
+    text-decoration:none;
+    color:inherit;
+    display:block;
+}
+
+.project-card-link:hover .project-card{
+    transform:translateY(-2px);
 }
 
   .project-card-body{
@@ -229,6 +250,13 @@
   .project-card.selected .project-desc{
     color:#E4E7EC;
   }
+
+  .empty-projects{
+    font-size:11px;
+    font-weight:400;
+    color:#98A2B3;
+    padding:8px 4px;
+}
  
   .project-meta{
     display:flex;
@@ -290,12 +318,12 @@
  
   <div class="page-header">
     <h1 class="page-title">Project Index</h1>
-    <button class="btn-primary" type="button">+ New Project</button>
+    <a href="{{ route('admin.projects.create') }}" class="btn-primary">+ New Project</a>
   </div>
  
   <div class="search-field">
     <svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27a6.47 6.47 0 0 0 1.57-4.23 6.5 6.5 0 1 0-6.5 6.5c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5Zm-6 0A4.5 4.5 0 1 1 14 9.5 4.5 4.5 0 0 1 9.5 14Z"/></svg>
-    <input type="text" placeholder="Search...">
+    <input type="text" id="project-search" placeholder="Search...">
   </div>
  
   <div class="board">
@@ -307,371 +335,341 @@
         <h2>Not Started</h2>
       </div>
       <div class="column-scroll">
- 
-        <div class="project-card selected">
-        <div class="project-card-header">
-          <div class="project-name">Client Onboarding Revamp</div>
-            </div>
-            <div class="project-card-body">
-          <div class="project-id">PRJ-0142</div>
-          <div class="project-desc">Redesign the client onboarding flow across web and portal, including document upload...</div>
-          <div class="project-meta">
-            <div class="meta-row">
-              <svg viewBox="0 0 24 24"><path d="M12 12a5 5 0 1 0 0-10 5 5 0 0 0 0 10Zm0 2c-4.4 0-8 2.2-8 5v2h16v-2c0-2.8-3.6-5-8-5Z"/></svg>
-              Afiq (Admin)
-            </div>
-            <div class="meta-row">
-              <svg viewBox="0 0 24 24"><path d="M14.4 6 14 4H5v17h2v-7h5.6l.4 2h7V6z"/></svg>
-              28 February 2027
-            </div>
-          </div>
-          <span class="status-pill pill-not-started">Not Started</span>
-        </div>
-    </div>
- 
+
+        @forelse ($notStartedProjects as $project)
+        <a href="{{ route('admin.projects.edit', $project) }}" class="project-card-link" data-search="{{ strtolower(
+        $project->name . ' ' .
+        ($project->description ??'') . ' ' .
+        $project->status . ' ' .
+        ($project->creator?->fullname ?? '')) }}">
+        
         <div class="project-card">
-        <div class="project-card-header">
-          <div class="project-name">Client Onboarding Revamp</div>
-            </div>
-            <div class="project-card-body">
-          <div class="project-id">PRJ-0142</div>
-          <div class="project-desc">Redesign the client onboarding flow across web and portal, including document upload...</div>
-          <div class="project-meta">
-            <div class="meta-row">
-              <svg viewBox="0 0 24 24"><path d="M12 12a5 5 0 1 0 0-10 5 5 0 0 0 0 10Zm0 2c-4.4 0-8 2.2-8 5v2h16v-2c0-2.8-3.6-5-8-5Z"/></svg>
-              Afiq (Admin)
-            </div>
-            <div class="meta-row">
-              <svg viewBox="0 0 24 24"><path d="M14.4 6 14 4H5v17h2v-7h5.6l.4 2h7V6z"/></svg>
-              28 February 2027
-            </div>
+          <div class="project-card-header">
+            <div class="project-name">{{ $project->name }}</div>
           </div>
-          <span class="status-pill pill-not-started">Not Started</span>
-        </div>
-    </div>
- 
-        <div class="project-card">
-        <div class="project-card-header">
-          <div class="project-name">Client Onboarding Revamp</div>
+          <div class="project-card-body">
+            <div class="project-id">PRJ-{{ str_pad($project->id, 4, '0', STR_PAD_LEFT) }}</div>
+            <div class="project-desc">{{ $project->description ?? 'No project description.' }}</div>
+            <div class="project-meta">
+
+                <div class="meta-row">
+                  <svg viewBox="0 0 24 24"><path d="M12 12a5 5 0 1 0 0-10 5 5 0 0 0 0 10Zm0 2c-4.4 0-8 2.2-8 5v2h16v-2c0-2.8-3.6-5-8-5Z"/></svg>
+                  {{ $project->creator?->fullname ?? 'Unknown Admin' }}
+                </div>
+                
+              <div class="meta-row">
+                <svg viewBox="0 0 24 24"><path d="M14.4 6 14 4H5v17h2v-7h5.6l.4 2h7V6z"/></svg>
+                {{ $project->end_date?->format('d F Y') }}
+              </div>
+
+              </div>
+              <span class="status-pill pill-not-started">Not Started</span>
+              </div>
             </div>
-            <div class="project-card-body">
-          <div class="project-id">PRJ-0142</div>
-          <div class="project-desc">Redesign the client onboarding flow across web and portal, including document upload...</div>
-          <div class="project-meta">
-            <div class="meta-row">
-              <svg viewBox="0 0 24 24"><path d="M12 12a5 5 0 1 0 0-10 5 5 0 0 0 0 10Zm0 2c-4.4 0-8 2.2-8 5v2h16v-2c0-2.8-3.6-5-8-5Z"/></svg>
-              Afiq (Admin)
-            </div>
-            <div class="meta-row">
-              <svg viewBox="0 0 24 24"><path d="M14.4 6 14 4H5v17h2v-7h5.6l.4 2h7V6z"/></svg>
-              28 February 2027
-            </div>
-          </div>
-          <span class="status-pill pill-not-started">Not Started</span>
-        </div>
-    </div>
- 
+          </a>
+
+        @empty
+
+          <div class="empty-projects">No projects found.</div>
+
+        @endforelse
+
+        <div class="no-search-results" style="display:none;">No matching projects.</div>
       </div>
     </div>
- 
+
     <!-- Ongoing -->
     <div class="column">
+
+
       <div class="column-header">
         <span class="status-dot dot-ongoing"></span>
         <h2>Ongoing</h2>
       </div>
+
       <div class="column-scroll">
- 
-        <div class="project-card">
-        <div class="project-card-header">
-          <div class="project-name">Client Onboarding Revamp</div>
-            </div>
-            <div class="project-card-body">
-          <div class="project-id">PRJ-0142</div>
-          <div class="project-desc">Redesign the client onboarding flow across web and portal, including document upload...</div>
-          <div class="project-meta">
-            <div class="meta-row">
-              <svg viewBox="0 0 24 24"><path d="M12 12a5 5 0 1 0 0-10 5 5 0 0 0 0 10Zm0 2c-4.4 0-8 2.2-8 5v2h16v-2c0-2.8-3.6-5-8-5Z"/></svg>
-              Afiq (Admin)
-            </div>
-            <div class="meta-row">
-              <svg viewBox="0 0 24 24"><path d="M14.4 6 14 4H5v17h2v-7h5.6l.4 2h7V6z"/></svg>
-              28 February 2027
-            </div>
-          </div>
-          <span class="status-pill pill-ongoing">Ongoing</span>
-        </div>
-    </div>
- 
-        <div class="project-card">
-        <div class="project-card-header">
-          <div class="project-name">Client Onboarding Revamp</div>
-            </div>
-            <div class="project-card-body">
-          <div class="project-id">PRJ-0142</div>
-          <div class="project-desc">Redesign the client onboarding flow across web and portal, including document upload...</div>
-          <div class="project-meta">
-            <div class="meta-row">
-              <svg viewBox="0 0 24 24"><path d="M12 12a5 5 0 1 0 0-10 5 5 0 0 0 0 10Zm0 2c-4.4 0-8 2.2-8 5v2h16v-2c0-2.8-3.6-5-8-5Z"/></svg>
-              Afiq (Admin)
-            </div>
-            <div class="meta-row">
-              <svg viewBox="0 0 24 24"><path d="M14.4 6 14 4H5v17h2v-7h5.6l.4 2h7V6z"/></svg>
-              28 February 2027
-            </div>
-          </div>
-          <span class="status-pill pill-ongoing">Ongoing</span>
-        </div>
-    </div>
- 
-        <div class="project-card">
-        <div class="project-card-header">
-          <div class="project-name">Client Onboarding Revamp</div>
-            </div>
-            <div class="project-card-body">
-          <div class="project-id">PRJ-0142</div>
-          <div class="project-desc">Redesign the client onboarding flow across web and portal, including document upload...</div>
-          <div class="project-meta">
-            <div class="meta-row">
-              <svg viewBox="0 0 24 24"><path d="M12 12a5 5 0 1 0 0-10 5 5 0 0 0 0 10Zm0 2c-4.4 0-8 2.2-8 5v2h16v-2c0-2.8-3.6-5-8-5Z"/></svg>
-              Afiq (Admin)
-            </div>
-            <div class="meta-row">
-              <svg viewBox="0 0 24 24"><path d="M14.4 6 14 4H5v17h2v-7h5.6l.4 2h7V6z"/></svg>
-              28 February 2027
-            </div>
-          </div>
-          <span class="status-pill pill-ongoing">Ongoing</span>
-        </div>
+
+          @forelse ($ongoingProjects as $project)
+
+          <a href="{{ route('admin.projects.edit', $project) }}" class="project-card-link" data-search="{{ strtolower(
+          $project->name . ' ' .
+          ($project->description ??'') . ' ' .
+          $project->status . ' ' .
+          ($project->creator?->fullname ?? '')) }}">
+
+              <div class="project-card">
+
+                  <div class="project-card-header">
+                      <div class="project-name">{{ $project->name }}</div>
+                  </div>
+
+                  <div class="project-card-body">
+
+                      <div class="project-id">PRJ-{{ str_pad($project->id, 4, '0', STR_PAD_LEFT) }}</div>
+
+                      <div class="project-desc">{{ $project->description ?? 'No project description.' }}</div>
+
+                      <div class="project-meta">
+
+                          <div class="meta-row">
+                              <svg viewBox="0 0 24 24"><path d="M12 12a5 5 0 1 0 0-10 5 5 0 0 0 0 10Zm0 2c-4.4 0-8 2.2-8 5v2h16v-2c0-2.8-3.6-5-8-5Z"/></svg>
+                              {{ $project->creator?->fullname ?? 'Unknown Admin' }}
+                          </div>
+
+                          <div class="meta-row">
+                              <svg viewBox="0 0 24 24"><path d="M14.4 6 14 4H5v17h2v-7h5.6l.4 2h7V6z"/></svg>
+                              {{ $project->end_date?->format('d F Y') }}
+                          </div>
+
+                      </div>
+                      <span class="status-pill pill-ongoing">Ongoing</span>
+                  </div>
+              </div>
+            </a>
+
+          @empty
+
+              <div class="empty-projects">No ongoing projects.</div>
+
+          @endforelse
+
+          <div class="no-search-results" style="display:none;">No matching projects.</div>
+      </div>
     </div>
 
-</div>
-</div>
- 
-    <!-- Completed -->
-    <div class="column">
-      <div class="column-header">
-        <span class="status-dot dot-completed"></span>
-        <h2>Completed</h2>
+      <!-- Completed -->
+      <div class="column">
+
+          <div class="column-header">
+              <span class="status-dot dot-completed"></span>
+              <h2>Completed</h2>
+          </div>
+
+          <div class="column-scroll">
+
+              @forelse ($completedProjects as $project)
+
+              <a href="{{ route('admin.projects.edit', $project) }}" class="project-card-link" data-search="{{ strtolower(
+              $project->name . ' ' .
+              ($project->description ??'') . ' ' .
+              $project->status . ' ' .
+              ($project->creator?->fullname ?? '')) }}">
+
+                  <div class="project-card">
+
+                      <div class="project-card-header">
+                          <div class="project-name">{{ $project->name }}</div>
+                      </div>
+
+                      <div class="project-card-body">
+
+                          <div class="project-id">PRJ-{{ str_pad($project->id, 4, '0', STR_PAD_LEFT) }}</div>
+
+                          <div class="project-desc">{{ $project->description ?? 'No project description.' }}</div>
+
+                          <div class="project-meta">
+
+                              <div class="meta-row">
+                                  <svg viewBox="0 0 24 24"><path d="M12 12a5 5 0 1 0 0-10 5 5 0 0 0 0 10Zm0 2c-4.4 0-8 2.2-8 5v2h16v-2c0-2.8-3.6-5-8-5Z"/></svg>
+                                  {{ $project->creator?->fullname ?? 'Unknown Admin' }}
+                              </div>
+
+                              <div class="meta-row">
+                                  <svg viewBox="0 0 24 24"><path d="M14.4 6 14 4H5v17h2v-7h5.6l.4 2h7V6z"/></svg>
+                                  {{ $project->end_date?->format('d F Y') }}
+                              </div>
+
+                          </div>
+                          <span class="status-pill pill-completed">Completed</span>
+                      </div>
+
+                  </div>
+                </a>
+
+              @empty
+
+                  <div class="empty-projects">No completed projects.</div>
+
+              @endforelse
+
+              <div class="no-search-results" style="display:none;">No matching projects.</div>
+          </div>
       </div>
-      <div class="column-scroll">
- 
-        <div class="project-card">
-        <div class="project-card-header">
-          <div class="project-name">Client Onboarding Revamp</div>
-            </div>
-            <div class="project-card-body">
-          <div class="project-id">PRJ-0142</div>
-          <div class="project-desc">Redesign the client onboarding flow across web and portal, including document upload...</div>
-          <div class="project-meta">
-            <div class="meta-row">
-              <svg viewBox="0 0 24 24"><path d="M12 12a5 5 0 1 0 0-10 5 5 0 0 0 0 10Zm0 2c-4.4 0-8 2.2-8 5v2h16v-2c0-2.8-3.6-5-8-5Z"/></svg>
-              Afiq (Admin)
-            </div>
-            <div class="meta-row">
-              <svg viewBox="0 0 24 24"><path d="M14.4 6 14 4H5v17h2v-7h5.6l.4 2h7V6z"/></svg>
-              28 February 2027
-            </div>
+
+      <!-- Blockage / On Hold -->
+      <div class="column">
+
+          <div class="column-header">
+              <span class="status-dot dot-on-hold"></span>
+              <h2>On Hold</h2>
           </div>
-          <span class="status-pill pill-completed">Completed</span>
-        </div>
-    </div>
- 
-        <div class="project-card">
-        <div class="project-card-header">
-          <div class="project-name">Client Onboarding Revamp</div>
-            </div>
-            <div class="project-card-body">
-          <div class="project-id">PRJ-0142</div>
-          <div class="project-desc">Redesign the client onboarding flow across web and portal, including document upload...</div>
-          <div class="project-meta">
-            <div class="meta-row">
-              <svg viewBox="0 0 24 24"><path d="M12 12a5 5 0 1 0 0-10 5 5 0 0 0 0 10Zm0 2c-4.4 0-8 2.2-8 5v2h16v-2c0-2.8-3.6-5-8-5Z"/></svg>
-              Afiq (Admin)
-            </div>
-            <div class="meta-row">
-              <svg viewBox="0 0 24 24"><path d="M14.4 6 14 4H5v17h2v-7h5.6l.4 2h7V6z"/></svg>
-              28 February 2027
-            </div>
+
+          <div class="column-scroll">
+
+              @forelse ($onHoldProjects as $project)
+
+              <a href="{{ route('admin.projects.edit', $project) }}" class="project-card-link" data-search="{{ strtolower(
+              $project->name . ' ' .
+              ($project->description ??'') . ' ' .
+              $project->status . ' ' .
+              ($project->creator?->fullname ?? '')) }}">
+              
+                  <div class="project-card">
+
+                      <div class="project-card-header">
+                          <div class="project-name">{{ $project->name }}</div>
+                      </div>
+
+                      <div class="project-card-body">
+
+                          <div class="project-id">PRJ-{{ str_pad($project->id, 4, '0', STR_PAD_LEFT) }}</div>
+
+                          <div class="project-desc">{{ $project->description ?? 'No project description.' }}</div>
+
+                          <div class="project-meta">
+
+                              <div class="meta-row">
+                                  <svg viewBox="0 0 24 24"><path d="M12 12a5 5 0 1 0 0-10 5 5 0 0 0 0 10Zm0 2c-4.4 0-8 2.2-8 5v2h16v-2c0-2.8-3.6-5-8-5Z"/></svg>
+                                  {{ $project->creator?->fullname ?? 'Unknown Admin' }}
+                              </div>
+
+                              <div class="meta-row">
+                                  <svg viewBox="0 0 24 24"><path d="M14.4 6 14 4H5v17h2v-7h5.6l.4 2h7V6z"/></svg>
+                                  {{ $project->end_date?->format('d F Y') }}
+                              </div>
+
+                          </div>
+                          <span class="status-pill pill-on-hold">On Hold</span>
+                      </div>
+
+                  </div>
+                </a>
+
+              @empty
+
+                  <div class="empty-projects">No projects on hold.</div>
+
+              @endforelse
+
+              <div class="no-search-results" style="display:none;">No matching projects.</div>
           </div>
-          <span class="status-pill pill-completed">Completed</span>
-        </div>
-    </div>
- 
-        <div class="project-card">
-        <div class="project-card-header">
-          <div class="project-name">Client Onboarding Revamp</div>
-            </div>
-            <div class="project-card-body">
-          <div class="project-id">PRJ-0142</div>
-          <div class="project-desc">Redesign the client onboarding flow across web and portal, including document upload...</div>
-          <div class="project-meta">
-            <div class="meta-row">
-              <svg viewBox="0 0 24 24"><path d="M12 12a5 5 0 1 0 0-10 5 5 0 0 0 0 10Zm0 2c-4.4 0-8 2.2-8 5v2h16v-2c0-2.8-3.6-5-8-5Z"/></svg>
-              Afiq (Admin)
-            </div>
-            <div class="meta-row">
-              <svg viewBox="0 0 24 24"><path d="M14.4 6 14 4H5v17h2v-7h5.6l.4 2h7V6z"/></svg>
-              28 February 2027
-            </div>
-          </div>
-          <span class="status-pill pill-completed">Completed</span>
-        </div>
-    </div>
- 
       </div>
-    </div>
- 
-    <!-- On Hold -->
-    <div class="column">
-      <div class="column-header">
-        <span class="status-dot dot-on-hold"></span>
-        <h2>On Hold</h2>
+
+      <!-- Cancelled -->
+      <div class="column">
+
+          <div class="column-header">
+              <span class="status-dot dot-cancelled"></span>
+              <h2>Cancelled</h2>
+          </div>
+
+          <div class="column-scroll">
+
+              @forelse ($cancelledProjects as $project)
+
+              <a href="{{ route('admin.projects.edit', $project) }}" class="project-card-link" data-search="{{ strtolower(
+              $project->name . ' ' .
+              ($project->description ??'') . ' ' .
+              $project->status . ' ' .
+              ($project->creator?->fullname ?? '')) }}">
+              
+                  <div class="project-card">
+
+                      <div class="project-card-header">
+                          <div class="project-name">{{ $project->name }}</div>
+                      </div>
+
+                      <div class="project-card-body">
+
+                          <div class="project-id">PRJ-{{ str_pad($project->id, 4, '0', STR_PAD_LEFT) }}</div>
+
+                          <div class="project-desc">{{ $project->description ?? 'No project description.' }}</div>
+
+                          <div class="project-meta">
+
+                              <div class="meta-row">
+                                  <svg viewBox="0 0 24 24"><path d="M12 12a5 5 0 1 0 0-10 5 5 0 0 0 0 10Zm0 2c-4.4 0-8 2.2-8 5v2h16v-2c0-2.8-3.6-5-8-5Z"/></svg>
+                                  {{ $project->creator?->fullname ?? 'Unknown Admin' }}
+                              </div>
+
+                              <div class="meta-row">
+                                  <svg viewBox="0 0 24 24"><path d="M14.4 6 14 4H5v17h2v-7h5.6l.4 2h7V6z"/></svg>
+                                  {{ $project->end_date?->format('d F Y') }}
+                              </div>
+
+                          </div>
+                          <span class="status-pill pill-cancelled">Cancelled</span>
+                      </div>
+
+                  </div>
+                </a>
+              @empty
+
+                  <div class="empty-projects">No cancelled projects.
+                  </div>
+
+              @endforelse
+
+              <div class="no-search-results" style="display:none;">No matching projects.</div>
+          </div>
       </div>
-      <div class="column-scroll">
- 
-        <div class="project-card">
-        <div class="project-card-header">
-          <div class="project-name">Client Onboarding Revamp</div>
-            </div>
-            <div class="project-card-body">
-          <div class="project-id">PRJ-0142</div>
-          <div class="project-desc">Redesign the client onboarding flow across web and portal, including document upload...</div>
-          <div class="project-meta">
-            <div class="meta-row">
-              <svg viewBox="0 0 24 24"><path d="M12 12a5 5 0 1 0 0-10 5 5 0 0 0 0 10Zm0 2c-4.4 0-8 2.2-8 5v2h16v-2c0-2.8-3.6-5-8-5Z"/></svg>
-              Afiq (Admin)
-            </div>
-            <div class="meta-row">
-              <svg viewBox="0 0 24 24"><path d="M14.4 6 14 4H5v17h2v-7h5.6l.4 2h7V6z"/></svg>
-              28 February 2027
-            </div>
-          </div>
-          <span class="status-pill pill-on-hold">On Hold</span>
-        </div>
-    </div>
- 
-        <div class="project-card">
-        <div class="project-card-header">
-          <div class="project-name">Client Onboarding Revamp</div>
-            </div>
-            <div class="project-card-body">
-          <div class="project-id">PRJ-0142</div>
-          <div class="project-desc">Redesign the client onboarding flow across web and portal, including document upload...</div>
-          <div class="project-meta">
-            <div class="meta-row">
-              <svg viewBox="0 0 24 24"><path d="M12 12a5 5 0 1 0 0-10 5 5 0 0 0 0 10Zm0 2c-4.4 0-8 2.2-8 5v2h16v-2c0-2.8-3.6-5-8-5Z"/></svg>
-              Afiq (Admin)
-            </div>
-            <div class="meta-row">
-              <svg viewBox="0 0 24 24"><path d="M14.4 6 14 4H5v17h2v-7h5.6l.4 2h7V6z"/></svg>
-              28 February 2027
-            </div>
-          </div>
-          <span class="status-pill pill-on-hold">On Hold</span>
-        </div>
-    </div>
- 
-        <div class="project-card">
-        <div class="project-card-header">
-          <div class="project-name">Client Onboarding Revamp</div>
-            </div>
-            <div class="project-card-body">
-          <div class="project-id">PRJ-0142</div>
-          <div class="project-desc">Redesign the client onboarding flow across web and portal, including document upload...</div>
-          <div class="project-meta">
-            <div class="meta-row">
-              <svg viewBox="0 0 24 24"><path d="M12 12a5 5 0 1 0 0-10 5 5 0 0 0 0 10Zm0 2c-4.4 0-8 2.2-8 5v2h16v-2c0-2.8-3.6-5-8-5Z"/></svg>
-              Afiq (Admin)
-            </div>
-            <div class="meta-row">
-              <svg viewBox="0 0 24 24"><path d="M14.4 6 14 4H5v17h2v-7h5.6l.4 2h7V6z"/></svg>
-              28 February 2027
-            </div>
-          </div>
-          <span class="status-pill pill-on-hold">On Hold</span>
-        </div>
-    </div>
- 
-      </div>
-    </div>
- 
-    <!-- Cancelled -->
-    <div class="column">
-      <div class="column-header">
-        <span class="status-dot dot-cancelled"></span>
-        <h2>Cancelled</h2>
-      </div>
-      <div class="column-scroll">
- 
-        <div class="project-card">
-        <div class="project-card-header">
-          <div class="project-name">Client Onboarding Revamp</div>
-            </div>
-            <div class="project-card-body">
-          <div class="project-id">PRJ-0142</div>
-          <div class="project-desc">Redesign the client onboarding flow across web and portal, including document upload...</div>
-          <div class="project-meta">
-            <div class="meta-row">
-              <svg viewBox="0 0 24 24"><path d="M12 12a5 5 0 1 0 0-10 5 5 0 0 0 0 10Zm0 2c-4.4 0-8 2.2-8 5v2h16v-2c0-2.8-3.6-5-8-5Z"/></svg>
-              Afiq (Admin)
-            </div>
-            <div class="meta-row">
-              <svg viewBox="0 0 24 24"><path d="M14.4 6 14 4H5v17h2v-7h5.6l.4 2h7V6z"/></svg>
-              28 February 2027
-            </div>
-          </div>
-          <span class="status-pill pill-cancelled">Cancelled</span>
-        </div>
-    </div>
- 
-        <div class="project-card">
-        <div class="project-card-header">
-          <div class="project-name">Client Onboarding Revamp</div>
-            </div>
-            <div class="project-card-body">
-          <div class="project-id">PRJ-0142</div>
-          <div class="project-desc">Redesign the client onboarding flow across web and portal, including document upload...</div>
-          <div class="project-meta">
-            <div class="meta-row">
-              <svg viewBox="0 0 24 24"><path d="M12 12a5 5 0 1 0 0-10 5 5 0 0 0 0 10Zm0 2c-4.4 0-8 2.2-8 5v2h16v-2c0-2.8-3.6-5-8-5Z"/></svg>
-              Afiq (Admin)
-            </div>
-            <div class="meta-row">
-              <svg viewBox="0 0 24 24"><path d="M14.4 6 14 4H5v17h2v-7h5.6l.4 2h7V6z"/></svg>
-              28 February 2027
-            </div>
-          </div>
-          <span class="status-pill pill-cancelled">Cancelled</span>
-        </div>
-    </div>
- 
-        <div class="project-card">
-        <div class="project-card-header">
-          <div class="project-name">Client Onboarding Revamp</div>
-            </div>
-            <div class="project-card-body">
-          <div class="project-id">PRJ-0142</div>
-          <div class="project-desc">Redesign the client onboarding flow across web and portal, including document upload...</div>
-          <div class="project-meta">
-            <div class="meta-row">
-              <svg viewBox="0 0 24 24"><path d="M12 12a5 5 0 1 0 0-10 5 5 0 0 0 0 10Zm0 2c-4.4 0-8 2.2-8 5v2h16v-2c0-2.8-3.6-5-8-5Z"/></svg>
-              Afiq (Admin)
-            </div>
-            <div class="meta-row">
-              <svg viewBox="0 0 24 24"><path d="M14.4 6 14 4H5v17h2v-7h5.6l.4 2h7V6z"/></svg>
-              28 February 2027
-            </div>
-          </div>
-          <span class="status-pill pill-cancelled">Cancelled</span>
-        </div>
-    </div>
- 
-      </div>
-    </div>
+
+  </div>
  
   </div>
 </div>
  
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+
+    const searchInput = document.getElementById('project-search');
+
+    searchInput.addEventListener('input', function () {
+
+        const searchValue = this.value.toLowerCase().trim();
+
+        const columns = document.querySelectorAll('.column');
+
+        columns.forEach(function (column) {
+
+            const projectCards = column.querySelectorAll('.project-card-link');
+            const noResultsMessage = column.querySelector('.no-search-results');
+
+            let visibleProjects = 0;
+
+            projectCards.forEach(function (card) {
+
+                const searchText = card.dataset.search || '';
+
+                if (searchText.includes(searchValue)) {
+
+                    card.style.display = '';
+                    visibleProjects++;
+
+                } else {
+
+                    card.style.display = 'none';
+
+                }
+
+            });
+
+            if (
+                searchValue !== '' &&
+                visibleProjects === 0 &&
+                projectCards.length > 0
+            ) {
+                noResultsMessage.style.display = 'block';
+            } else {
+                noResultsMessage.style.display = 'none';
+            }
+
+        });
+
+    });
+
+});
+</script>
+
 </body>
 </html>

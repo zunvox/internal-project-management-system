@@ -112,6 +112,14 @@ Route::middleware('auth')->group(function () {
             Route::put('/projects/{project}', [AdminProjectController::class, 'update'])
             ->name('projects.update');
 
+            //Add project milestone comment
+            Route::post( '/projects/{project}/milestones', [AdminProjectController::class, 'storeMilestone'])
+            ->name('projects.milestones.store');
+            
+            //Delete project milestone comment
+            Route::delete('/projects/{project}/milestones/{milestone}', [AdminProjectController::class, 'destroyMilestone'])
+            ->name('projects.milestones.destroy');
+
             //Delete project page
             Route::delete('/projects/{project}', [AdminProjectController::class, 'destroy'])
             ->name('projects.destroy');
@@ -131,6 +139,12 @@ Route::middleware('auth')->group(function () {
 
             Route::get('/projects', [DeveloperProjectController::class, 'index'])
             ->name('projects.index');
+
+            Route::post('/projects/{project}/milestones', [DeveloperProjectController::class, 'storeMilestone'])
+            ->name('projects.milestones.store');
+
+            Route::delete('/projects/{project}/milestones/{milestone}', [DeveloperProjectController::class, 'destroyMilestone'])
+            ->name('projects.milestones.destroy');
         });
 });
 

@@ -23,7 +23,7 @@ return new class extends Migration
             $table->enum('status', [
                 'Not Started',
                 'Ongoing',
-                'Blockage',
+                'On Hold',
                 'Cancelled',
                 'Completed',
             ])->default('Not Started');

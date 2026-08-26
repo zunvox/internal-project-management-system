@@ -53,7 +53,7 @@ class Invoice extends Model
 
     public function items(): HasMany
     {
-        return $this->hasMany(InvoiceItemDetail::class, 'invoice_item_id');
+        return $this->hasMany(InvoiceItem::class, 'invoice_id');
     }
 
     public function paymentVoucher(): HasOne

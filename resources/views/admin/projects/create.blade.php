@@ -368,7 +368,7 @@
 
                         <div class="dev-actions">
                             <a href="{{ route('admin.projects.index') }}" class="link-cancel">Cancel</a>
-                            <button class="btn-confirm" type="submit">Confirm</button>
+                            <button class="btn-confirm" type="submit" id="create-project-btn">Confirm</button>
                         </div>
                     </div>
                 </div>
@@ -385,6 +385,7 @@
     const developerItems = document.querySelectorAll('.dev-item');
     const checkboxes = document.querySelectorAll('.dev-checkbox');
     const selectedSummary = document.getElementById('selected-summary');
+    const createForm = document.getElementById('create-project-form');
 
     function updateSelectedDevelopers()
     {
@@ -439,6 +440,16 @@
             }
         });
     });
+
+    createForm.addEventListener('submit', function(event)
+    {
+      const confirmed = confirm('Are you sure you want to create this project?');
+
+      if(!confirmed)
+    {
+      event.preventDefault();
+    }
+  });
     updateSelectedDevelopers();
 });
 </script>

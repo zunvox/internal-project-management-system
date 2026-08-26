@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="csrf-token" content="{{ csrf_token() }}">
 <title>Edit Project</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="{{ asset('css/admin.css') }}">
@@ -414,6 +415,169 @@
     background:#FEE4E2;
   }
 
+.milestone-card{
+    margin-top:24px;
+    border:1px solid #101828;
+    border-radius:10px;
+    overflow:hidden;
+    background:#FFFFFF;
+    min-height:300px;
+
+    display:flex;
+    flex-direction:column;
+}
+
+.milestone-header{
+    padding:14px 20px;
+    background:#D0D0D0;
+    border-bottom:1px solid #101828;
+
+    font-size:16px;
+    font-weight:600;
+    color:#101828;
+}
+
+.milestone-list{
+    flex:1;
+    max-height:320px;
+    min-height:220px;
+
+    padding:16px 20px;
+
+    overflow-y:auto;
+
+    display:flex;
+    flex-direction:column;
+    gap:16px;
+}
+
+.milestone-item{
+    padding-bottom:14px;
+    border-bottom:1px solid #EAECF0;
+}
+
+.milestone-item:last-child{
+    border-bottom:none;
+}
+
+.milestone-row{
+    display:flex;
+    align-items:flex-start;
+    gap:14px;
+}
+
+.milestone-indicator{
+    width:7px;
+    height:7px;
+
+    margin-top:5px;
+
+    border-radius:999px;
+    background:#32D74B;
+
+    flex-shrink:0;
+}
+
+.milestone-content{
+    flex:1;
+}
+
+.milestone-comment-header{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+
+    margin-bottom:8px;
+}
+
+.milestone-user{
+    font-size:12px;
+    font-weight:600;
+    color:#101828;
+}
+
+.milestone-date{
+    margin-left:12px;
+
+    font-size:9px;
+    color:#98A2B3;
+}
+
+.milestone-description{
+    font-size:11px;
+    color:#475467;
+    line-height:1.5;
+}
+
+.milestone-delete-btn{
+    width:22px;
+    height:22px;
+
+    border:none;
+    border-radius:5px;
+
+    background:transparent;
+    color:#D92D20;
+
+    font-size:16px;
+    line-height:1;
+
+    cursor:pointer;
+}
+
+.milestone-delete-btn:hover{
+    background:#FEE4E2;
+}
+
+.milestone-empty{
+    font-size:11px;
+    color:#98A2B3;
+    padding:12px 0;
+}
+
+.milestone-comment-form{
+    padding:12px 20px;
+    border-top:1px solid #D0D5DD;
+    background:#FFFFFF;
+}
+
+.milestone-comment-form textarea{
+    width:100%;
+    height:34px;
+    min-height:34px;
+
+    resize:none;
+
+    border:1px solid #D0D5DD;
+    border-radius:6px;
+
+    padding:8px 10px;
+
+    box-sizing:border-box;
+
+    font-family:'Inter', sans-serif;
+    font-size:11px;
+
+    outline:none;
+}
+
+.milestone-comment-form textarea:focus{
+    border-color:#2B6FFF;
+}
+
+.milestone-list::-webkit-scrollbar{
+    width:8px;
+}
+
+.milestone-list::-webkit-scrollbar-track{
+    background:#F2F4F7;
+}
+
+.milestone-list::-webkit-scrollbar-thumb{
+    background:#98A2B3;
+    border-radius:8px;
+}
+
   </style>
 
 </head>
@@ -427,7 +591,7 @@
 
   <div class="breadcrumb">Projects &gt; <span class="current">PRJ-{{ str_pad($project->id, 4, '0', STR_PAD_LEFT) }}</span></div>
   <h1 class="page-title">Update Project</h1>
-  <p class="page-subtitle">{{ $project->name }} — last updated {{ $project->updated_at->format('d F Y') }}</p>
+  <p class="page-subtitle">{{ $project->name }} — last updated {{ $project->updated_at->format('d F Y \a\t g:i A') }}</p>
 
   <form action="{{  route('admin.projects.update', $project) }}" method="POST">
     @csrf
@@ -455,7 +619,7 @@
           <label for="status">Status</label>
           <select id="status" name="status" required>
 
-            @foreach (['Not Started', 'Ongoing', 'Blockage', 'Cancelled', 'Completed'] as $status)
+            @foreach (['Not Started', 'Ongoing', 'On Hold', 'Cancelled', 'Completed'] as $status)
 
             <option value="{{ $status }}" {{  old('status', $project->status) === $status ? 'selected' : '' }}>{{ $status }}</option>
 
@@ -575,10 +739,101 @@
             <button class="btn-delete" type="button" id="delete-project-btn">&#128465; Delete Project</button>
           </div>
         </form>
-      </div>
+
+          </div>
 </div>
 
-  </div>
+</div>
+
+<!-- ---------- Milestones ---------- -->
+
+<div class="milestone-card">
+
+    <div class="milestone-header">
+        Milestones
+    </div>
+
+    <div
+        class="milestone-list"
+        id="milestone-list"
+    >
+
+        @forelse ($project->milestones as $milestone)
+
+            <div
+                class="milestone-item"
+                data-milestone-id="{{ $milestone->id }}"
+            >
+
+                <div class="milestone-row">
+
+                    <div class="milestone-indicator"></div>
+
+                    <div class="milestone-content">
+
+                        <div class="milestone-comment-header">
+
+                            <div>
+                                <strong class="milestone-user">
+                                    {{ $milestone->user?->fullname ?? 'Unknown User' }}
+                                </strong>
+
+                                <span class="milestone-date">
+                                    {{ $milestone->created_at->format('h:i A') }}
+                                </span>
+                            </div>
+
+                            <button
+                                type="button"
+                                class="milestone-delete-btn"
+                                data-milestone-id="{{ $milestone->id }}"
+                                title="Delete milestone"
+                            >
+                                &times;
+                            </button>
+
+                        </div>
+
+                        <div class="milestone-description">
+                            {{ $milestone->description }}
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        @empty
+
+            <div
+                class="milestone-empty"
+                id="milestone-empty"
+            >
+                No milestone updates yet.
+            </div>
+
+        @endforelse
+
+    </div>
+
+    <form
+        id="milestone-form"
+        class="milestone-comment-form"
+        method="POST"
+    >
+        @csrf
+
+        <textarea
+            name="description"
+            id="milestone-description"
+            placeholder="Enter progress..."
+            required
+        ></textarea>
+    </form>
+
+</div>
+
 </div>
 
 <script>
@@ -728,6 +983,408 @@ document.addEventListener('DOMContentLoaded', function ()
     }
 
     });
+
+    // ---------------- MILESTONES ----------------
+
+    const milestoneForm =
+        document.getElementById(
+            'milestone-form'
+        );
+
+    const milestoneDescription =
+        document.getElementById(
+            'milestone-description'
+        );
+
+    const milestoneList =
+        document.getElementById(
+            'milestone-list'
+        );
+
+    const milestoneStoreUrl =
+        @json(
+            route(
+                'admin.projects.milestones.store',
+                $project->id
+            )
+        );
+
+    const milestoneDeleteUrl = @json(
+    route(
+        'admin.projects.milestones.destroy',
+        [
+            'project' => $project->id,
+            'milestone' => '__MILESTONE__'
+        ]
+    )
+);
+
+
+    function createMilestoneItem(
+        milestone
+    ) {
+
+        const item =
+            document.createElement('div');
+
+        item.classList.add(
+            'milestone-item'
+        );
+
+        item.dataset.milestoneId =
+            milestone.id;
+
+
+        const row =
+            document.createElement('div');
+
+        row.classList.add(
+            'milestone-row'
+        );
+
+
+        const indicator =
+            document.createElement('div');
+
+        indicator.classList.add(
+            'milestone-indicator'
+        );
+
+
+        const content =
+            document.createElement('div');
+
+        content.classList.add(
+            'milestone-content'
+        );
+
+
+        const header =
+            document.createElement('div');
+
+        header.classList.add(
+            'milestone-comment-header'
+        );
+
+
+        const userInformation =
+            document.createElement('div');
+
+
+        const user =
+            document.createElement('strong');
+
+        user.classList.add(
+            'milestone-user'
+        );
+
+        user.textContent =
+            milestone.user;
+
+
+        const date =
+            document.createElement('span');
+
+        date.classList.add(
+            'milestone-date'
+        );
+
+        date.textContent =
+            milestone.created_at;
+
+
+        userInformation.appendChild(
+            user
+        );
+
+        userInformation.appendChild(
+            date
+        );
+
+
+        const deleteButton =
+            document.createElement(
+                'button'
+            );
+
+        deleteButton.type = 'button';
+
+        deleteButton.classList.add(
+            'milestone-delete-btn'
+        );
+
+        deleteButton.dataset.milestoneId =
+            milestone.id;
+
+        deleteButton.title =
+            'Delete milestone';
+
+        deleteButton.textContent =
+            '×';
+
+
+        const description =
+            document.createElement('div');
+
+        description.classList.add(
+            'milestone-description'
+        );
+
+        description.textContent =
+            milestone.description;
+
+
+        header.appendChild(
+            userInformation
+        );
+
+        header.appendChild(
+            deleteButton
+        );
+
+        content.appendChild(
+            header
+        );
+
+        content.appendChild(
+            description
+        );
+
+        row.appendChild(
+            indicator
+        );
+
+        row.appendChild(
+            content
+        );
+
+        item.appendChild(
+            row
+        );
+
+        return item;
+    }
+
+
+    // Press Enter to post
+    milestoneDescription.addEventListener(
+        'keydown',
+        function (event) {
+
+            if (
+                event.key === 'Enter' &&
+                !event.shiftKey
+            ) {
+
+                event.preventDefault();
+
+                if (
+                    milestoneDescription
+                        .value
+                        .trim() === ''
+                ) {
+                    return;
+                }
+
+                milestoneForm.requestSubmit();
+            }
+
+        }
+    );
+
+
+    // Add milestone
+    milestoneForm.addEventListener(
+        'submit',
+        async function (event) {
+
+            event.preventDefault();
+
+            const description =
+                milestoneDescription
+                    .value
+                    .trim();
+
+            if (description === '') {
+                return;
+            }
+
+            const formData =
+                new FormData(
+                    milestoneForm
+                );
+
+            try {
+
+                const response =
+                    await fetch(
+                        milestoneStoreUrl,
+                        {
+                            method: 'POST',
+
+                            headers: {
+                                'Accept':
+                                    'application/json',
+                            },
+
+                            body: formData,
+                        }
+                    );
+
+                if (!response.ok) {
+                    throw new Error(
+                        'Unable to add milestone.'
+                    );
+                }
+
+                const data =
+                    await response.json();
+
+                const emptyMessage =
+                    milestoneList.querySelector(
+                        '.milestone-empty'
+                    );
+
+                if (emptyMessage) {
+                    emptyMessage.remove();
+                }
+
+                const newItem =
+                    createMilestoneItem(
+                        data.milestone
+                    );
+
+                milestoneList.appendChild(
+                    newItem
+                );
+
+                milestoneDescription.value =
+                    '';
+
+                milestoneDescription.focus();
+
+                milestoneList.scrollTop =
+                    milestoneList.scrollHeight;
+
+            } catch (error) {
+
+                console.error(error);
+
+                alert(
+                    'Unable to add milestone comment.'
+                );
+
+            }
+
+        }
+    );
+
+
+    // Delete milestone
+    milestoneList.addEventListener(
+        'click',
+        async function (event) {
+
+            const deleteButton =
+                event.target.closest(
+                    '.milestone-delete-btn'
+                );
+
+            if (!deleteButton) {
+                return;
+            }
+
+            const confirmed =
+                confirm(
+                    'Are you sure you want to delete this milestone comment?'
+                );
+
+            if (!confirmed) {
+                return;
+            }
+
+            const milestoneId =
+                deleteButton.dataset
+                    .milestoneId;
+
+            const deleteUrl =
+                milestoneDeleteUrl.replace(
+                    '__MILESTONE__',
+                    milestoneId
+                );
+
+            try {
+
+                const response =
+                    await fetch(
+                        deleteUrl,
+                        {
+                            method: 'DELETE',
+
+                            headers: {
+                                'Accept':
+                                    'application/json',
+
+                                'X-CSRF-TOKEN':
+                                    document.querySelector(
+                                        'meta[name="csrf-token"]'
+                                    ).content,
+                            },
+                        }
+                    );
+
+                if (!response.ok) {
+                    throw new Error(
+                        'Unable to delete milestone.'
+                    );
+                }
+
+                const milestoneItem =
+                    deleteButton.closest(
+                        '.milestone-item'
+                    );
+
+                milestoneItem.remove();
+
+
+                if (
+                    milestoneList
+                        .querySelectorAll(
+                            '.milestone-item'
+                        )
+                        .length === 0
+                ) {
+
+                    const empty =
+                        document.createElement(
+                            'div'
+                        );
+
+                    empty.classList.add(
+                        'milestone-empty'
+                    );
+
+                    empty.textContent =
+                        'No milestone updates yet.';
+
+                    milestoneList.appendChild(
+                        empty
+                    );
+                }
+
+            } catch (error) {
+
+                console.error(error);
+
+                alert(
+                    'Unable to delete milestone comment.'
+                );
+
+            }
+
+        }
+    );
+
 });
 
 </script>

@@ -6,6 +6,7 @@ use App\Http\Controllers\Auth\ResetPasswordController;
 use App\Http\Controllers\Admin\UserManagementController;
 use App\Http\Controllers\Admin\AdminProjectController;
 use App\Http\Controllers\DeveloperProjectController;
+use App\Http\Controllers\DeveloperInvoiceController;
 use Illuminate\Support\Facades\Route;
 
 /*These routes are only for users who are not logged in.*/
@@ -145,6 +146,24 @@ Route::middleware('auth')->group(function () {
 
             Route::delete('/projects/{project}/milestones/{milestone}', [DeveloperProjectController::class, 'destroyMilestone'])
             ->name('projects.milestones.destroy');
+
+            Route::get('/developer/invoices', [DeveloperInvoiceController::class, 'index'])
+            ->name('developer.invoices.index');
+
+            Route::get('/developer/invoices/create', [DeveloperInvoiceController::class, 'create'])
+            ->name('developer.invoices.create');
+
+            Route::post('/developer/invoices', [DeveloperInvoiceController::class, 'store'])
+            ->name('developer.invoices.store');
+
+            Route::get('/developer/invoices/{invoice}', [DeveloperInvoiceController::class, 'show'])
+            ->name('developer.invoices.show');
+
+            Route::get('/developer/invoices/{invoice}/edit', [DeveloperInvoiceController::class, 'edit'])
+            ->name('developer.invoices.edit');
+
+            Route::delete('/developer/invoices/{invoice}', [DeveloperInvoiceController::class, 'destroy'])
+            ->name('developer.invoices.destroy');
         });
 });
 

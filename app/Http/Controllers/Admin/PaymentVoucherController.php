@@ -9,15 +9,8 @@ use Illuminate\View\View;
 
 class PaymentVoucherController extends Controller
 {
-    /*
-    |--------------------------------------------------------------------------
-    | Payment Voucher Management List
-    |--------------------------------------------------------------------------
-    |
-    | For now this displays invoice requests only.
-    | Claims will be added later.
-    |
-    */
+    /*Payment Voucher Management List*/
+    
     public function index(Request $request): View
     {
         $status = $request->query('status');
@@ -50,17 +43,12 @@ class PaymentVoucherController extends Controller
     }
 
 
-    /*
-    |--------------------------------------------------------------------------
-    | View One Invoice Request
-    |--------------------------------------------------------------------------
-    */
+    /*View One Invoice Request*/
+
     public function showInvoice(Invoice $invoice): View
     {
-        /*
-         * Draft invoices must never appear
-         * in the admin review section.
-         */
+        /*Draft invoices must never appearin the admin review section.*/
+
         abort_if(
             $invoice->status === 'Draft',
             404
@@ -80,19 +68,14 @@ class PaymentVoucherController extends Controller
     }
 
 
-    /*
-    |--------------------------------------------------------------------------
-    | Approve Submitted Invoice
-    |--------------------------------------------------------------------------
-    */
+    /*Approve Submitted Invoice*/
+
     public function approveInvoice(
         Request $request,
         Invoice $invoice
     ) {
-        /*
-         * Only Submitted invoices
-         * are allowed to be approved.
-         */
+        /*Only Submitted invoices are allowed to be approved.*/
+
         abort_unless(
             $invoice->status === 'Submitted',
             403
@@ -124,19 +107,14 @@ class PaymentVoucherController extends Controller
     }
 
 
-    /*
-    |--------------------------------------------------------------------------
-    | Reject Submitted Invoice
-    |--------------------------------------------------------------------------
-    */
+    /*Reject Submitted Invoice*/
+
     public function rejectInvoice(
         Request $request,
         Invoice $invoice
     ) {
-        /*
-         * Only Submitted invoices
-         * are allowed to be rejected.
-         */
+        /* Only Submitted invoices are allowed to be rejected.*/
+
         abort_unless(
             $invoice->status === 'Submitted',
             403

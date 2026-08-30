@@ -5,6 +5,7 @@ use App\Http\Controllers\Auth\ForgotPasswordController;
 use App\Http\Controllers\Auth\ResetPasswordController;
 use App\Http\Controllers\Admin\UserManagementController;
 use App\Http\Controllers\Admin\AdminProjectController;
+use App\Http\Controllers\Admin\PaymentVoucherController;
 use App\Http\Controllers\DeveloperProjectController;
 use App\Http\Controllers\DeveloperInvoiceController;
 use Illuminate\Support\Facades\Route;
@@ -124,6 +125,25 @@ Route::middleware('auth')->group(function () {
             //Delete project page
             Route::delete('/projects/{project}', [AdminProjectController::class, 'destroy'])
             ->name('projects.destroy');
+
+            /* Payment Voucher Management */
+
+            // Payment Voucher request list
+            Route::get('/payment-vouchers', [PaymentVoucherController::class, 'index'])
+            ->name('payment-vouchers.index');
+
+            // View one invoice request
+            Route::get('/payment-vouchers/invoices/{invoice}', [PaymentVoucherController::class, 'showInvoice'])
+            ->name('payment-vouchers.invoices.show');
+
+            // Approve submitted invoice
+            Route::put('/payment-vouchers/invoices/{invoice}/approve', [PaymentVoucherController::class, 'approveInvoice'])
+            ->name('payment-vouchers.invoices.approve');
+
+            // Reject submitted invoice
+            Route::put('/payment-vouchers/invoices/{invoice}/reject', [PaymentVoucherController::class, 'rejectInvoice'])
+            ->name('payment-vouchers.invoices.reject');
+
         });
 
     /*Developer Routes*/
@@ -147,23 +167,23 @@ Route::middleware('auth')->group(function () {
             Route::delete('/projects/{project}/milestones/{milestone}', [DeveloperProjectController::class, 'destroyMilestone'])
             ->name('projects.milestones.destroy');
 
-            Route::get('/developer/invoices', [DeveloperInvoiceController::class, 'index'])
-            ->name('developer.invoices.index');
+            Route::get('/invoices', [DeveloperInvoiceController::class, 'index'])
+            ->name('invoices.index');
 
-            Route::get('/developer/invoices/create', [DeveloperInvoiceController::class, 'create'])
-            ->name('developer.invoices.create');
+            Route::get('/invoices/create', [DeveloperInvoiceController::class, 'create'])
+            ->name('invoices.create');
 
-            Route::post('/developer/invoices', [DeveloperInvoiceController::class, 'store'])
-            ->name('developer.invoices.store');
+            Route::post('/invoices', [DeveloperInvoiceController::class, 'store'])
+            ->name('invoices.store');
 
-            Route::get('/developer/invoices/{invoice}', [DeveloperInvoiceController::class, 'show'])
-            ->name('developer.invoices.show');
+            Route::get('/invoices/{invoice}', [DeveloperInvoiceController::class, 'show'])
+            ->name('invoices.show');
 
-            Route::get('/developer/invoices/{invoice}/edit', [DeveloperInvoiceController::class, 'edit'])
-            ->name('developer.invoices.edit');
+            Route::get('/invoices/{invoice}/edit', [DeveloperInvoiceController::class, 'edit'])
+            ->name('invoices.edit');
 
-            Route::delete('/developer/invoices/{invoice}', [DeveloperInvoiceController::class, 'destroy'])
-            ->name('developer.invoices.destroy');
+            Route::delete('/invoices/{invoice}', [DeveloperInvoiceController::class, 'destroy'])
+            ->name('invoices.destroy');
         });
 });
 

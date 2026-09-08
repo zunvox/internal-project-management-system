@@ -67,14 +67,14 @@ class UserManagementController extends Controller
             // var_dump($users);
             // exit
 
-        return view('admin.users-index', compact('users', 'allCount', 'developerCount', 'adminCount', 'activeCount', 'inactiveCount'));
+        return view('admin.admin-user.users-index', compact('users', 'allCount', 'developerCount', 'adminCount', 'activeCount', 'inactiveCount'));
     }
 
     /* Display the Add User page.*/
 
     public function create(): View
     {
-        return view('admin.create-user');
+        return view('admin.admin-user.create-user');
     }
 
     /* Store a newly created user.*/
@@ -125,7 +125,7 @@ class UserManagementController extends Controller
      */
     public function show(User $user): View
     {
-        return view('admin.view-user', compact('user'));
+        return view('admin.admin-user.view-user', compact('user'));
     }
 
     /**
@@ -133,7 +133,7 @@ class UserManagementController extends Controller
      */
     public function edit(User $user): View
     {
-        return view('admin.edit-user', compact('user'));
+        return view('admin.admin-user.edit-user', compact('user'));
     }
 
     /* Update an existing user.*/

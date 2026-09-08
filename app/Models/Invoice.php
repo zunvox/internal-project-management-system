@@ -22,11 +22,13 @@ class Invoice extends Model
         'status',
         'subtotal',
         'tax_amount',
+        'tax_percentage',
         'discount_amount',
         'grand_total',
         'submitted_at',
         'reviewed_at',
         'reviewed_by',
+        'review_notes',
     ];
 
     protected function casts(): array

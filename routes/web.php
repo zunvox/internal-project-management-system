@@ -144,6 +144,9 @@ Route::middleware('auth')->group(function () {
             Route::put('/payment-vouchers/invoices/{invoice}/reject', [PaymentVoucherController::class, 'rejectInvoice'])
             ->name('payment-vouchers.invoices.reject');
 
+            Route::post('/payment-vouchers/invoices/{invoice}/generate', [PaymentVoucherController::class, 'generateVoucher'])
+            ->name('payment-vouchers.invoices.generate');
+
         });
 
     /*Developer Routes*/
@@ -181,6 +184,9 @@ Route::middleware('auth')->group(function () {
 
             Route::get('/invoices/{invoice}/edit', [DeveloperInvoiceController::class, 'edit'])
             ->name('invoices.edit');
+
+            Route::put('/invoices/{invoice}', [DeveloperInvoiceController::class, 'update'])
+            ->name('invoices.update');
 
             Route::delete('/invoices/{invoice}', [DeveloperInvoiceController::class, 'destroy'])
             ->name('invoices.destroy');

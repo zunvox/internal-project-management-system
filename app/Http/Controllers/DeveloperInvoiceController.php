@@ -12,20 +12,62 @@ use Illuminate\View\View;
 
 class DeveloperInvoiceController extends Controller
 {
-    public function index(): View
-    {
-        $user = auth()->user();
+    public function index(Request $request): View
+{
+    $user = auth()->user();
 
-        $invoices = Invoice::with([
-            'project',
-            'items',
-        ])
-        ->where('user_id', $user->id)
-        ->latest()
+    $status = $request->query('status');
+
+    $baseQuery = Invoice::with([
+        'project',
+    ])
+    ->where('user_id', $user->id);
+
+    $counts = [
+        'all' => (clone $baseQuery)->count(),
+
+        'draft' => (clone $baseQuery)
+            ->where('status', 'Draft')
+            ->count(),
+
+        'submitted' => (clone $baseQuery)
+            ->where('status', 'Submitted')
+            ->count(),
+
+        'approved' => (clone $baseQuery)
+            ->where('status', 'Approved')
+            ->count(),
+
+        'rejected' => (clone $baseQuery)
+            ->where('status', 'Rejected')
+            ->count(),
+    ];
+
+    $invoices = $baseQuery
+        ->when($status, function ($query, $status) {
+
+            if (in_array($status, [
+                'Draft',
+                'Submitted',
+                'Approved',
+                'Rejected',
+            ])) {
+                $query->where('status', $status);
+            }
+
+        })
+        ->latest('created_at')
         ->get();
 
-        return view('developer.invoices.index', compact('invoices'));
-    }
+    return view(
+        'developer.invoices.index',
+        compact(
+            'invoices',
+            'status',
+            'counts'
+        )
+    );
+}
 
     public function create(): View
     {
@@ -98,10 +140,11 @@ class DeveloperInvoiceController extends Controller
                 'min:0',
             ],
 
-            'tax_amount' => [
-                'nullable',
+            'tax_percentage' => [
+                'required',
                 'numeric',
                 'min:0',
+                'max:100',
             ],
 
             'discount_amount' => [
@@ -124,16 +167,22 @@ class DeveloperInvoiceController extends Controller
 
         $subtotal = 0;
 
-        foreach ($validated['items'] as $item)
+        foreach ($validated['items'] as $item) 
             {
-                $subtotal +=
-                $item['quantity'] * $item['unit_price'];
+                $quantity = (float) $item['quantity'];
+                $unitPrice = (float) $item['unit_price'];
+
+                $totalPrice = $quantity * $unitPrice;
+
+                $subtotal += $totalPrice;
             }
 
-            $taxAmount = $validated['tax_amount'] ?? 0;
+            $taxPercentage = (float) $validated['tax_percentage'];
+            $taxAmount = $subtotal * ($taxPercentage / 100);
             $discountAmount = $validated['discount_amount'] ?? 0;
 
             $grandTotal = $subtotal + $taxAmount - $discountAmount;
+            $grandTotal = max($grandTotal, 0);
 
             /*Upload supporting document*/
         
@@ -152,6 +201,7 @@ class DeveloperInvoiceController extends Controller
                     $user,
                     $project,
                     $subtotal,
+                    $taxPercentage,
                     $taxAmount,
                     $discountAmount,
                     $grandTotal,
@@ -166,10 +216,11 @@ class DeveloperInvoiceController extends Controller
                         'attachment' => $attachmentPath,
                         'status' => $validated['status'],
                         'subtotal' => $subtotal,
-                         'tax_amount' => $taxAmount,
-                         'discount_amount' => $discountAmount,
-                         'grand_total' => $grandTotal,
-                         'submitted_at' =>
+                        'tax_amount' => $taxAmount,
+                        'tax_percentage' => $taxPercentage,
+                        'discount_amount' => $discountAmount,
+                        'grand_total' => $grandTotal,
+                        'submitted_at' =>
                          
                          $validated['status'] === 'Submitted'
                         ? now()
@@ -207,8 +258,10 @@ class DeveloperInvoiceController extends Controller
         abort_unless( $invoice->user_id === $user->id, 403);
 
         $invoice->load([
+            'user',
             'project',
             'items',
+            'paymentVoucher',
         ]);
 
         return view(
@@ -246,6 +299,223 @@ class DeveloperInvoiceController extends Controller
         );
     }
 
+    public function update(Request $request, Invoice $invoice)
+{
+    $user = auth()->user();
+
+    // Developer can only update their own invoice
+    abort_unless($invoice->user_id === $user->id, 403);
+
+    // Only Draft invoices can be edited
+    abort_unless($invoice->status === 'Draft', 403);
+
+    $validated = $request->validate([
+        'project_id' => [
+            'required',
+            'exists:projects,id',
+        ],
+
+        'subject' => [
+            'required',
+            'string',
+            'max:200',
+        ],
+
+        'description' => [
+            'nullable',
+            'string',
+        ],
+
+        'attachment' => [
+            'nullable',
+            'file',
+            'mimes:pdf,jpg,jpeg,png',
+            'max:5120',
+        ],
+
+        'remove_attachment' => [
+            'nullable',
+            'boolean',
+        ],
+
+        'status' => [
+            'required',
+            'in:Draft,Submitted',
+        ],
+
+        'items' => [
+            'required',
+            'array',
+            'min:1',
+        ],
+
+        'items.*.item_name' => [
+            'required',
+            'string',
+            'max:200',
+        ],
+
+        'items.*.quantity' => [
+            'required',
+            'integer',
+            'min:1',
+        ],
+
+        'items.*.unit_price' => [
+            'required',
+            'numeric',
+            'min:0',
+        ],
+
+        'tax_percentage' => [
+            'required',
+            'numeric',
+            'min:0',
+            'max:100',
+        ],
+
+        'discount_amount' => [
+            'nullable',
+            'numeric',
+            'min:0',
+        ],
+    ]);
+
+    // Make sure developer is assigned to selected project
+    $project = Project::where('id', $validated['project_id'])
+        ->whereHas('assignedUsers', function ($query) use ($user) {
+            $query->where('users.id', $user->id);
+        })
+        ->firstOrFail();
+
+    // Calculate subtotal
+    $subtotal = 0;
+
+    foreach ($validated['items'] as $item) {
+        $quantity = (float) $item['quantity'];
+        $unitPrice = (float) $item['unit_price'];
+
+        $totalPrice = $quantity * $unitPrice;
+
+        $subtotal += $totalPrice;
+    }
+
+    // Calculate tax
+    $taxPercentage = (float) $validated['tax_percentage'];
+
+    $taxAmount = $subtotal * ($taxPercentage / 100);
+
+    // Calculate discount
+    $discountAmount =
+        (float) ($validated['discount_amount'] ?? 0);
+
+    // Calculate grand total
+    $grandTotal =
+        $subtotal
+        + $taxAmount
+        - $discountAmount;
+
+    // Prevent negative total
+    $grandTotal = max($grandTotal, 0);
+
+    // Keep existing attachment by default
+    $attachmentPath = $invoice->attachment;
+
+    // User wants to remove the current attachment
+    if ($request->boolean('remove_attachment')) 
+    {
+
+        if ($invoice->attachment) 
+        {
+            Storage::disk('public')
+                ->delete($invoice->attachment);
+        }
+
+        $attachmentPath = null;
+    }
+
+    // User uploads a new attachment
+    if ($request->hasFile('attachment')) 
+    {
+
+        if ($attachmentPath) 
+        {
+            Storage::disk('public')
+                ->delete($attachmentPath);
+        }
+
+        $attachmentPath = $request
+            ->file('attachment')
+            ->store('invoice-attachments', 'public');
+    }
+
+    DB::transaction(function () use (
+        $invoice,
+        $validated,
+        $project,
+        $subtotal,
+        $taxPercentage,
+        $taxAmount,
+        $discountAmount,
+        $grandTotal,
+        $attachmentPath
+    ) {
+
+        // Update invoice
+        $invoice->update([
+            'project_id' => $project->id,
+            'subject' => $validated['subject'],
+            'description' =>
+                $validated['description'] ?? null,
+            'attachment' => $attachmentPath,
+            'status' => $validated['status'],
+
+            'subtotal' => $subtotal,
+            'tax_percentage' => $taxPercentage,
+            'tax_amount' => $taxAmount,
+            'discount_amount' => $discountAmount,
+            'grand_total' => $grandTotal,
+
+            'submitted_at' =>
+                $validated['status'] === 'Submitted'
+                    ? now()
+                    : null,
+        ]);
+
+        // Delete the old item rows
+        $invoice->items()->delete();
+
+        // Save the edited item rows
+        foreach ($validated['items'] as $item) {
+
+            $quantity = (float) $item['quantity'];
+            $unitPrice = (float) $item['unit_price'];
+
+            $totalPrice =
+                $quantity * $unitPrice;
+
+            InvoiceItem::create([
+                'invoice_id' => $invoice->id,
+                'item_name' => $item['item_name'],
+                'quantity' => $item['quantity'],
+                'unit_price' => $item['unit_price'],
+                'total_price' => $totalPrice,
+            ]);
+        }
+    });
+
+    if ($validated['status'] === 'Draft') 
+        {
+            return redirect()
+            ->route('developer.invoices.index', $invoice)
+            ->with('success', 'Invoice draft saved successfully.');
+        }
+
+    return redirect()
+    ->route('developer.invoices.index')
+    ->with('success', 'Invoice submitted successfully.');
+}
+
     /*Delete an invoice*/
 
     public function destroy(Invoice $invoice)
@@ -264,6 +534,7 @@ class DeveloperInvoiceController extends Controller
                 ->delete($invoice->attachment);
             }
 
+            $invoice->items()->delete();
             $invoice->delete();
 
             return redirect()
@@ -278,14 +549,24 @@ class DeveloperInvoiceController extends Controller
 
     private function generateInvoiceCode(): string
     {
-        do
-        {
-            $code = 'INV-' .
-            now()->format('Ymd') .
-            '-' .
-            strtoupper(substr(uniqid(),-5));
-        }
-        while(Invoice::where('invoice_code', $code)->exists());
+        $lastInvoice = Invoice::orderByDesc('id')->first();
+
+        $nextNumber = $lastInvoice
+            ? $lastInvoice->id + 1
+            : 1;
+
+        do {
+            $code = 'INV-' . str_pad(
+                $nextNumber,
+                4,
+                '0',
+                STR_PAD_LEFT
+            );
+
+            $nextNumber++;
+        } while (
+            Invoice::where('invoice_code', $code)->exists()
+        );
 
         return $code;
     }

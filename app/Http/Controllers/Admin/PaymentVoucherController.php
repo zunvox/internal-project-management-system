@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Invoice;
+use App\Models\PaymentVoucher;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 
@@ -15,7 +16,7 @@ class PaymentVoucherController extends Controller
     {
         $status = $request->query('status');
 
-        $invoices = Invoice::with([
+        $baseQuery = Invoice::with([
             'user',
             'project',
         ])
@@ -23,8 +24,27 @@ class PaymentVoucherController extends Controller
             'Submitted',
             'Approved',
             'Rejected',
-        ])
+        ]);
+
+        $counts = [
+        'all' => (clone $baseQuery)->count(),
+
+        'submitted' => (clone $baseQuery)
+            ->where('status', 'Submitted')
+            ->count(),
+
+        'approved' => (clone $baseQuery)
+            ->where('status', 'Approved')
+            ->count(),
+
+        'rejected' => (clone $baseQuery)
+            ->where('status', 'Rejected')
+            ->count(),
+    ];
+
+    $invoices = $baseQuery
         ->when($status, function ($query, $status) {
+
             if (in_array($status, [
                 'Submitted',
                 'Approved',
@@ -38,7 +58,7 @@ class PaymentVoucherController extends Controller
 
         return view(
             'admin.payment-vouchers.index',
-            compact('invoices', 'status')
+            compact('invoices', 'status', 'counts')
         );
     }
 
@@ -58,7 +78,7 @@ class PaymentVoucherController extends Controller
             'user',
             'project',
             'items',
-            'paymentVoucher',
+            'paymentVoucher.reviewer',
         ]);
 
         return view(
@@ -93,6 +113,7 @@ class PaymentVoucherController extends Controller
             'status' => 'Approved',
             'reviewed_by' => auth()->id(),
             'reviewed_at' => now(),
+            'review_notes' => $request->notes,
         ]);
 
         return redirect()
@@ -132,6 +153,7 @@ class PaymentVoucherController extends Controller
             'status' => 'Rejected',
             'reviewed_by' => auth()->id(),
             'reviewed_at' => now(),
+            'review_notes' => $request->notes,
         ]);
 
         return redirect()
@@ -143,5 +165,88 @@ class PaymentVoucherController extends Controller
                 'success',
                 'Invoice rejected successfully.'
             );
+    }
+
+    /* Generate Payment Voucher */
+
+    public function generateVoucher(
+        Request $request,
+        Invoice $invoice
+    ) {
+        // Voucher can only be generated for an approved invoice
+        abort_unless(
+            $invoice->status === 'Approved',
+            403
+        );
+
+        // Prevent more than one voucher for the same invoice
+        abort_if(
+            $invoice->paymentVoucher()->exists(),
+            403,
+            'A payment voucher has already been generated for this invoice.'
+        );
+
+        $validated = $request->validate([
+            'payment_method' => [
+                'required',
+                'in:Bank Transfer,Cash,Cheque,Online Payment,Other',
+            ],
+        ]);
+
+        PaymentVoucher::create([
+            'reviewed_by' => $invoice->reviewed_by,
+            'invoice_id' => $invoice->id,
+            'claim_id' => null,
+
+            'voucher_code' => $this->generateVoucherCode(),
+
+            'amount' => $invoice->grand_total,
+
+            'payment_method' => $validated['payment_method'],
+            'notes' => $invoice->review_notes,
+
+            'status' => 'Generated',
+
+            'reviewed_at' => $invoice->reviewed_at,
+            'generated_at' => now(),
+        ]);
+
+        return redirect()
+            ->route(
+                'admin.payment-vouchers.invoices.show',
+                $invoice
+            )
+            ->with(
+                'success',
+                'Payment voucher generated successfully.'
+            );
+    }
+
+    /* Generate Unique Payment Voucher Number */
+
+    private function generateVoucherCode(): string
+    {
+        $year = now()->format('Y');
+
+        $nextNumber = (PaymentVoucher::max('id') ?? 0) + 1;
+
+        do {
+            $code = 'PV-' .
+                $year .
+                '-' .
+                str_pad(
+                    $nextNumber,
+                    4,
+                    '0',
+                    STR_PAD_LEFT
+                );
+
+            $nextNumber++;
+        }
+        while (
+            PaymentVoucher::where('voucher_code', $code)->exists()
+        );
+
+        return $code;
     }
 }

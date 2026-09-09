@@ -148,6 +148,26 @@ Route::middleware('auth')->group(function () {
             Route::post('/payment-vouchers/invoices/{invoice}/generate', [PaymentVoucherController::class, 'generateVoucher'])
             ->name('payment-vouchers.invoices.generate');
 
+            /*Claim Expenses Management*/
+
+            //View one claim request
+            Route::get('/payment-vouchers/claims/{claim}', [PaymentVoucherController::class, 'showClaim'])
+            ->name('payment-vouchers.claims.show');
+
+            //Approve submitted claim
+            Route::put('/payment-vouchers/claims/{claim}/approve', [PaymentVoucherController::class, 'approveClaim'])
+            ->name('payment-vouchers.claims.approve');
+
+            //Reject submitted claim
+            Route::put('/payment-vouchers/claims/{claim}/reject', [PaymentVoucherController::class, 'rejectClaim'])
+            ->name('payment-vouchers.claims.reject');
+
+            //Generate payment voucher for claim
+            Route::post('/payment-vouchers.claims/{claim}/generate', [PaymentVoucherController::class, 'generateClaimVoucher'])
+            ->name('payment-vouchers.claims.generate');
+
+
+
         });
 
     /*Developer Routes*/

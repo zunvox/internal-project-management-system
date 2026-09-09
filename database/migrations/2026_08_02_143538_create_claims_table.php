@@ -45,6 +45,8 @@ return new class extends Migration
 
             $table->timestamp('reviewed_at')->nullable();
 
+            $table->text('review_notes')->nullable();
+
             $table->timestamps();
 
             $table->index('status');

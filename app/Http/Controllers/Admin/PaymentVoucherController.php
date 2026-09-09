@@ -5,18 +5,21 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Invoice;
 use App\Models\PaymentVoucher;
+use App\Models\Claim;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 
 class PaymentVoucherController extends Controller
-{
-    /*Payment Voucher Management List*/
-    
+{   
+    /* Payment Voucher Management List */
     public function index(Request $request): View
     {
         $status = $request->query('status');
 
-        $baseQuery = Invoice::with([
+        /*
+        * Invoice requests.
+        */
+        $invoiceQuery = Invoice::with([
             'user',
             'project',
         ])
@@ -26,39 +29,96 @@ class PaymentVoucherController extends Controller
             'Rejected',
         ]);
 
+        /*
+        * Claim requests.
+        */
+        $claimQuery = Claim::with([
+            'user',
+            'category',
+        ])
+        ->whereIn('status', [
+            'Submitted',
+            'Approved',
+            'Rejected',
+        ]);
+
+        /*
+        * Counts include both invoices and claims.
+        */
         $counts = [
-        'all' => (clone $baseQuery)->count(),
+            'all' =>
+                (clone $invoiceQuery)->count()
+                +
+                (clone $claimQuery)->count(),
 
-        'submitted' => (clone $baseQuery)
-            ->where('status', 'Submitted')
-            ->count(),
+            'submitted' =>
+                (clone $invoiceQuery)
+                    ->where('status', 'Submitted')
+                    ->count()
+                +
+                (clone $claimQuery)
+                    ->where('status', 'Submitted')
+                    ->count(),
 
-        'approved' => (clone $baseQuery)
-            ->where('status', 'Approved')
-            ->count(),
+            'approved' =>
+                (clone $invoiceQuery)
+                    ->where('status', 'Approved')
+                    ->count()
+                +
+                (clone $claimQuery)
+                    ->where('status', 'Approved')
+                    ->count(),
 
-        'rejected' => (clone $baseQuery)
-            ->where('status', 'Rejected')
-            ->count(),
-    ];
+            'rejected' =>
+                (clone $invoiceQuery)
+                    ->where('status', 'Rejected')
+                    ->count()
+                +
+                (clone $claimQuery)
+                    ->where('status', 'Rejected')
+                    ->count(),
+        ];
 
-    $invoices = $baseQuery
-        ->when($status, function ($query, $status) {
+        /*
+        * Apply selected status to invoices.
+        */
+        $invoices = $invoiceQuery
+            ->when($status, function ($query, $status) {
+                if (in_array($status, [
+                    'Submitted',
+                    'Approved',
+                    'Rejected',
+                ])) {
+                    $query->where('status', $status);
+                }
+            })
+            ->latest('submitted_at')
+            ->get();
 
-            if (in_array($status, [
-                'Submitted',
-                'Approved',
-                'Rejected',
-            ])) {
-                $query->where('status', $status);
-            }
-        })
-        ->latest('submitted_at')
-        ->get();
+        /*
+        * Apply selected status to claims.
+        */
+        $claims = $claimQuery
+            ->when($status, function ($query, $status) {
+                if (in_array($status, [
+                    'Submitted',
+                    'Approved',
+                    'Rejected',
+                ])) {
+                    $query->where('status', $status);
+                }
+            })
+            ->latest('submitted_at')
+            ->get();
 
         return view(
             'admin.payment-vouchers.index',
-            compact('invoices', 'status', 'counts')
+            compact(
+                'invoices',
+                'claims',
+                'status',
+                'counts'
+            )
         );
     }
 
@@ -81,10 +141,111 @@ class PaymentVoucherController extends Controller
             'paymentVoucher.reviewer',
         ]);
 
-        return view(
-            'admin.payment-vouchers.show-invoice',
-            compact('invoice')
-        );
+        return view('admin.payment-vouchers.show-invoice', compact('invoice'));
+    }
+
+    /*View One Claim Request*/
+    public function showClaim(Claim $claim): View
+    {
+        $claim->load([
+            'user',
+            'category',
+            'reviewer',
+            'paymentVoucher.reviewer',
+        ]);
+
+        return view('admin.payment-vouchers.show-claim', compact('claim'));
+    }
+
+    /*Approve Submitted Claim*/
+    public function approveClaim(Request $request, Claim $claim)
+    {
+        /*Only submitted claim can be approved.*/
+        abort_unless($claim->status === 'Submitted', 403);
+
+        $request->validate([
+            'notes' => [
+                'nullable',
+                'string',
+                'max:2000',
+            ],
+        ]);
+
+        $claim->update([
+            'status' => 'Approved',
+            'reviewed_by' => auth()->id(),
+            'reviewed_at' => now(),
+            'review_notes' => $request->notes,
+        ]);
+
+        return redirect()->route('admin.payment-vouchers.claims.show', $claim)
+        ->with('success', 'Claim approved successfully.');
+    }
+
+    /* Reject Submitted Claim */
+    public function rejectClaim(Request $request, Claim $claim) 
+    {
+        /* Only Submitted claims can be rejected.*/
+        abort_unless($claim->status === 'Submitted', 403);
+
+        $request->validate([
+            'notes' => [
+                'required',
+                'string',
+                'max:2000',
+            ],
+        ]);
+
+        $claim->update([
+            'status' => 'Rejected',
+            'reviewed_by' => auth()->id(),
+            'reviewed_at' => now(),
+            'review_notes' => $request->notes,
+        ]);
+
+        return redirect()->route('admin.payment-vouchers.claims.show', $claim)
+            ->with('success', 'Claim rejected successfully.');
+    }
+
+    /* Generate Payment Voucher For Claim */
+    public function generateClaimVoucher(Claim $claim) 
+    {
+        /*Voucher can only be generated for an approved claim.*/
+        abort_unless($claim->status === 'Approved', 403);
+
+        /*Prevent duplicate vouchers.*/
+        abort_if($claim->paymentVoucher()->exists(), 403, 'A payment voucher has already been generated for this claim.');
+
+        PaymentVoucher::create([
+            'reviewed_by' => $claim->reviewed_by,
+
+            'invoice_id' => null,
+            'claim_id' => $claim->id,
+
+            'voucher_code' =>
+                $this->generateVoucherCode(),
+
+            'amount' =>
+                $claim->amount,
+
+            'payment_method' => 
+                'Bank Transfer',
+
+            'notes' =>
+                $claim->review_notes,
+
+            'status' =>
+                'Generated',
+
+            'reviewed_at' =>
+                $claim->reviewed_at,
+
+            'generated_at' =>
+                now(),
+        ]);
+
+        return redirect()->route('admin.payment-vouchers.claims.show', $claim)
+            ->with('success', 'Payment voucher generated successfully.');
     }
 
 

@@ -393,29 +393,13 @@
                 </div>
 
                 <!-- Other Category -->
-                <div
-                    class="form-field"
-                    id="other-category-field"
-                    style="display:none;"
-                >
-                    <label for="other_category">
-                        Specify Category
-                    </label>
-
-                    <input
-                        id="other_category"
-                        name="other_category"
-                        type="text"
-                        value="{{ old('other_category') }}"
-                        placeholder="Enter claim category"
-                        maxlength="100"
-                    >
+                <div class="form-field" id="other-category-field" style="display:none;">
+                    <label for="other_category">Specify Category</label>
+                    <input id="other_category" name="other_category" type="text" value="{{ old('other_category') }}" placeholder="Enter claim category" maxlength="100">
 
                     @error('other_category')
                         <div class="field-error">
-                            <svg viewBox="0 0 24 24">
-                                <path d="M12 2 1 21h22L12 2Zm0 15a1.2 1.2 0 1 1 0-2.4 1.2 1.2 0 0 1 0 2.4Zm1-4h-2V9h2v4Z"/>
-                            </svg>
+                            <svg viewBox="0 0 24 24"><path d="M12 2 1 21h22L12 2Zm0 15a1.2 1.2 0 1 1 0-2.4 1.2 1.2 0 0 1 0 2.4Zm1-4h-2V9h2v4Z"/></svg>
                             {{ $message }}
                         </div>
                     @enderror

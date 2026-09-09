@@ -439,10 +439,11 @@ body{
 
                 <tbody id="voucher-table-body">
 
-                    @forelse ($invoices as $invoice)
+                    @foreach ($invoices as $invoice)
 
                         <tr
                             class="voucher-row"
+                            data-type="invoice"
                             data-search="{{ strtolower(
                                 $invoice->invoice_code . ' ' .
                                 $invoice->subject . ' ' .
@@ -536,22 +537,116 @@ body{
 
                         </tr>
 
-                    @empty
+                    @endforeach
 
-                        <tr class="empty-row">
+                    @foreach ($claims as $claim)
+
+                        <tr
+                            class="voucher-row"
+                            data-type="claim"
+
+                            data-search="{{ strtolower(
+                                $claim->claim_code . ' ' .
+                                $claim->title . ' ' .
+                                ($claim->user?->fullname ?? '') . ' ' .
+                                ($claim->user?->username ?? '') . ' ' .
+                                ($claim->category?->category_name ?? '') . ' ' .
+                                $claim->status
+                            ) }}"
+                        >
+
+                            <td>
+                                {{ $claim->claim_code }}
+                            </td>
+
+                            <td>
+                                {{ $claim->title }}
+                            </td>
+
+                            <td>
+                                {{
+                                    $claim->user?->fullname
+                                    ?? $claim->user?->username
+                                    ?? 'Unknown Developer'
+                                }}
+                            </td>
+
+                            <td>
+                                {{
+                                    $claim->submitted_at
+                                        ? $claim->submitted_at->format('j F Y')
+                                        : '-'
+                                }}
+                            </td>
+
+                            <td>
+                                {{ number_format($claim->amount, 2) }}
+                            </td>
+
+                            <td>
+
+                                @if ($claim->status === 'Submitted')
+
+                                    <span class="status-pill status-submitted">
+                                        Submitted
+                                    </span>
+
+                                @elseif ($claim->status === 'Approved')
+
+                                    <span class="status-pill status-approved">
+                                        Approved
+                                    </span>
+
+                                @elseif ($claim->status === 'Rejected')
+
+                                    <span class="status-pill status-rejected">
+                                        Rejected
+                                    </span>
+
+                                @endif
+
+                            </td>
+
+                            <td class="col-action">
+
+                                {{-- Admin Claim Detail link --}}
+                                <a href="{{ route('admin.payment-vouchers.claims.show', $claim) }}" class="action-link" title="View request">
+                                    <svg viewBox="0 0 24 24">
+                                        <rect
+                                            x="5"
+                                            y="4"
+                                            width="14"
+                                            height="17"
+                                            rx="2"
+                                        ></rect>
+
+                                        <path d="M9 2h6v4H9z"></path>
+                                        <path d="M8 10h8"></path>
+                                        <path d="M8 14h8"></path>
+                                        <path d="M8 18h6"></path>
+                                    </svg>
+                                </a>
+
+                            </td>
+
+                        </tr>
+
+                    @endforeach
+
+                    @if ($invoices->isEmpty() && $claims->isEmpty())
+
+                        <tr class="empty-row" id="database-empty-row">
+
                             <td colspan="7">
                                 No payment voucher requests found.
                             </td>
+
                         </tr>
 
-                    @endforelse
+                    @endif
 
                     <tr id="no-search-results" class="empty-row" style="display:none;">
                         <td colspan="7">No matching requests found.</td>
-                    </tr>
-
-                    <tr id="no-claim-results" class="claim-empty-row" style="display:none;" >
-                        <td colspan="7">No claim requests found.</td>
                     </tr>
 
                 </tbody>
@@ -576,88 +671,99 @@ body{
 
 <script>
 
-const searchInput = document.getElementById('voucher-search');
+const searchInput =
+    document.getElementById('voucher-search');
 
-const requestType = document.getElementById('request-type');
+const requestType =
+    document.getElementById('request-type');
 
-const rows = document.querySelectorAll('.voucher-row');
+const rows =
+    document.querySelectorAll('.voucher-row');
 
-const noResults = document.getElementById('no-search-results');
+const noResults =
+    document.getElementById('no-search-results');
 
-const noClaimResults = document.getElementById('no-claim-results');
+const databaseEmptyRow =
+    document.getElementById('database-empty-row');
 
 
 function updateTable()
 {
-    const selectedType = requestType.value;
+    const selectedType =
+        requestType.value;
 
-    const searchValue = searchInput.value
+    const searchValue =
+        searchInput.value
             .toLowerCase()
             .trim();
 
-
-    // Claims module is not implemented yet
-    if (selectedType === 'claim') 
-    {
-
-        rows.forEach(function (row) 
-        {
-            row.style.display = 'none';
-        });
-
-        if (noResults) 
-        {
-            noResults.style.display = 'none';
-        }
-
-        if (noClaimResults) 
-        {
-            noClaimResults.style.display = '';
-        }
-
-        return;
-    }
-
-
-    // Both / Invoice
-    if (noClaimResults) 
-    {
-        noClaimResults.style.display = 'none';
-    }
-
     let visibleRows = 0;
 
-    rows.forEach(function (row) 
+
+    rows.forEach(function (row)
     {
+        const searchableText =
+            row.dataset.search || '';
 
-        const searchableText = row.dataset.search || '';
+        const rowType =
+            row.dataset.type || '';
 
-        const matches = searchableText.includes(searchValue);
+        const matchesSearch =
+            searchableText.includes(searchValue);
 
-        row.style.display = matches ? '' : 'none';
+        const matchesType =
+            selectedType === 'both'
+            || selectedType === rowType;
 
-        if (matches) 
+
+        const shouldShow =
+            matchesSearch && matchesType;
+
+        row.style.display =
+            shouldShow ? '' : 'none';
+
+
+        if (shouldShow)
         {
             visibleRows++;
         }
-
     });
 
 
-    if (noResults) 
+    /*
+     * Hide the database empty state while
+     * filtering because the JS empty state
+     * handles it instead.
+     */
+    if (databaseEmptyRow)
     {
+        databaseEmptyRow.style.display =
+            rows.length === 0
+                ? ''
+                : 'none';
+    }
 
-        noResults.style.display = visibleRows === 0 && rows.length > 0
+
+    if (noResults)
+    {
+        noResults.style.display =
+            visibleRows === 0 && rows.length > 0
                 ? ''
                 : 'none';
     }
 }
 
 
-searchInput.addEventListener('input', updateTable);
+searchInput.addEventListener(
+    'input',
+    updateTable
+);
 
 
-requestType.addEventListener('change', updateTable);
+requestType.addEventListener(
+    'change',
+    updateTable
+);
 
 </script>
 

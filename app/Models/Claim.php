@@ -24,6 +24,7 @@ class Claim extends Model
         'submitted_at',
         'reviewed_at',
         'reviewed_by',
+        'review_notes',
     ];
 
     protected function casts(): array

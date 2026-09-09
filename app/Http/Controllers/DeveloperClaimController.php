@@ -19,7 +19,7 @@ class DeveloperClaimController extends Controller
 
         $status = $request->query('status');
 
-        $baseQuery = Claim::with(['category',])
+        $baseQuery = Claim::with(['category'])
         ->where('user_id', $user->id);
 
         $counts = [
@@ -227,6 +227,7 @@ class DeveloperClaimController extends Controller
         $claim->load([
             'user',
             'category',
+            'reviewer',
             'paymentVoucher',
         ]);
 

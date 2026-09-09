@@ -15,13 +15,12 @@ return new class extends Migration
                 ->constrained('users')
                 ->restrictOnDelete();
 
-            $table->foreignId('project_id')
-                ->constrained('projects')
-                ->restrictOnDelete();
-
             $table->foreignId('category_id')
                 ->constrained('claim_categories')
                 ->restrictOnDelete();
+
+            $table->string('other_category', 100)
+                ->nullable();
 
             $table->string('claim_code', 50)->unique();
             $table->string('title', 200);
@@ -50,10 +49,7 @@ return new class extends Migration
 
             $table->index('status');
             $table->index('submitted_at');
-            $table->index([
-                'user_id',
-                'project_id',
-            ]);
+            $table->index(['user_id']);
         });
     }
 

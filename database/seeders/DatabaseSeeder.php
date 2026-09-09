@@ -134,6 +134,8 @@ class DatabaseSeeder extends Seeder
             'status' => 'Active',
         ]);
 
+        $this->call([ClaimCategorySeeder::class,]);
+
         
     }
 }

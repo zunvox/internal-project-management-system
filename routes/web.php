@@ -8,6 +8,7 @@ use App\Http\Controllers\Admin\AdminProjectController;
 use App\Http\Controllers\Admin\PaymentVoucherController;
 use App\Http\Controllers\DeveloperProjectController;
 use App\Http\Controllers\DeveloperInvoiceController;
+use App\Http\Controllers\DeveloperClaimController;
 use Illuminate\Support\Facades\Route;
 
 /*These routes are only for users who are not logged in.*/
@@ -170,6 +171,8 @@ Route::middleware('auth')->group(function () {
             Route::delete('/projects/{project}/milestones/{milestone}', [DeveloperProjectController::class, 'destroyMilestone'])
             ->name('projects.milestones.destroy');
 
+            /*Invoice Management*/
+
             Route::get('/invoices', [DeveloperInvoiceController::class, 'index'])
             ->name('invoices.index');
 
@@ -190,7 +193,29 @@ Route::middleware('auth')->group(function () {
 
             Route::delete('/invoices/{invoice}', [DeveloperInvoiceController::class, 'destroy'])
             ->name('invoices.destroy');
-        });
+
+            /*Claim Expenses Management*/
+
+            // Claim list
+            Route::get('/claims', [DeveloperClaimController::class, 'index'])
+                ->name('claims.index');
+
+            // Create claim page
+            Route::get('/claims/create', [DeveloperClaimController::class, 'create'])
+            ->name('claims.create');
+
+            // Submit claim
+            Route::post('/claims', [DeveloperClaimController::class, 'store'])
+            ->name('claims.store');
+
+            // View one claim
+            Route::get('/claims/{claim}', [DeveloperClaimController::class, 'show'])
+            ->name('claims.show');
+
+            // Delete claim
+            Route::delete('/claims/{claim}', [DeveloperClaimController::class, 'destroy'])
+            ->name('claims.destroy');
+            });
 });
 
 /*Preview Route*/

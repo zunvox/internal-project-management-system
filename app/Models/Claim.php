@@ -13,8 +13,8 @@ class Claim extends Model
 
     protected $fillable = [
         'user_id',
-        'project_id',
         'category_id',
+        'other_category',
         'claim_code',
         'title',
         'amount',
@@ -38,11 +38,6 @@ class Claim extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class, 'user_id');
-    }
-
-    public function project(): BelongsTo
-    {
-        return $this->belongsTo(Project::class, 'project_id');
     }
 
     public function category(): BelongsTo

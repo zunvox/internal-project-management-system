@@ -498,7 +498,11 @@
                             <span class="info-label">Submitted By</span>
 
                             <span class="info-value">
-                                {{ $claim->user->name ?? '-' }}
+                                {{
+                                    $claim->user?->fullname
+                                    ?? $claim->user?->username
+                                    ?? '-'
+                                }}
                             </span>
                         </div>
 
@@ -670,7 +674,11 @@
                                     </span>
 
                                     <strong>
-                                        {{ $claim->reviewer?->name ?? '-' }}
+                                        {{
+                                            $claim->reviewer?->fullname
+                                            ?? $claim->reviewer?->username
+                                            ?? '-'
+                                        }}
                                     </strong>
                                 </div>
 

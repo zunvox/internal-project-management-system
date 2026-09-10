@@ -330,7 +330,7 @@
             </div>
 
 
-            <form action="{{ route('developer.claims.store') }}" method="POST" enctype="multipart/form-data">
+            <form id="claim-create-form" action="{{ route('developer.claims.store') }}" method="POST" enctype="multipart/form-data">
 
                 @csrf
 
@@ -658,6 +658,30 @@ document.addEventListener(
                             behavior: 'smooth',
                             block: 'center'
                         });
+                }
+            }
+        );
+
+        const claimCreateForm = document.getElementById('claim-create-form');
+
+        claimCreateForm.addEventListener('submit', function (event)
+            {
+                /*Keep your existing receipt validation first.*/
+                if (
+                    !receiptInput.files ||
+                    receiptInput.files.length === 0
+                )
+                {
+                    return;
+                }
+
+                const confirmed = confirm(
+                    'Are you sure you want to submit this claim?'
+                );
+
+                if (!confirmed)
+                {
+                    event.preventDefault();
                 }
             }
         );

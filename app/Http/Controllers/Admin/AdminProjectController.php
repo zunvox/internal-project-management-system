@@ -4,8 +4,8 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Project;
-use App\Models\User;
 use App\Models\ProjectMilestone;
+use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -19,15 +19,14 @@ class AdminProjectController extends Controller
             'creator',
             'assignedUsers',
         ])
-        ->latest()
-        ->get();
+            ->latest()
+            ->get();
 
         $notStartedProjects = $projects->where('status', 'Not Started');
         $ongoingProjects = $projects->where('status', 'Ongoing');
         $completedProjects = $projects->where('status', 'Completed');
         $onHoldProjects = $projects->where('status', 'On Hold');
         $cancelledProjects = $projects->where('status', 'Cancelled');
-
 
         return view('admin.projects.index', compact(
             'projects',
@@ -36,15 +35,15 @@ class AdminProjectController extends Controller
             'completedProjects',
             'onHoldProjects',
             'cancelledProjects'
-            ));
+        ));
     }
 
     public function create(): View
     {
         $developers = User::where('role', 'Developer')
-        ->where('status', 'Active')
-        ->orderBy('fullname')
-        ->get();
+            ->where('status', 'Active')
+            ->orderBy('fullname')
+            ->get();
 
         return view('admin.projects.create', compact('developers'));
     }
@@ -59,9 +58,9 @@ class AdminProjectController extends Controller
 
             'developers' => ['required', 'array', 'min:1'],
             'developers.*' => ['integer',
-            Rule::exists('users', 'id')
-            ->where('role', 'Developer')
-            ->where('status', 'Active'),
+                Rule::exists('users', 'id')
+                    ->where('role', 'Developer')
+                    ->where('status', 'Active'),
             ],
         ]);
 
@@ -77,27 +76,27 @@ class AdminProjectController extends Controller
         $project->assignedUsers()->attach($validated['developers']);
 
         return redirect()
-        ->route('admin.projects.index')
-        ->with('success', 'Project created successfully.');
+            ->route('admin.projects.index')
+            ->with('success', 'Project created successfully.');
     }
 
     public function edit(Project $project): View
     {
         $project->load([
-            'creator', 
+            'creator',
             'assignedUsers',
             'milestones.user',
-            ]);
+        ]);
 
         $developers = User::where('role', 'Developer')
-        ->where('status', 'Active')
-        ->orderBy('fullname')
-        ->get();
+            ->where('status', 'Active')
+            ->orderBy('fullname')
+            ->get();
 
         return view('admin.projects.edit', compact(
-            'project', 
+            'project',
             'developers'
-            ));
+        ));
     }
 
     public function update(Request $request, Project $project): RedirectResponse
@@ -115,7 +114,7 @@ class AdminProjectController extends Controller
                 'after_or_equal:start_date',
             ],
 
-            'status' =>[
+            'status' => [
                 'required',
                 Rule::in([
                     'Not Started',
@@ -155,15 +154,14 @@ class AdminProjectController extends Controller
         $project->touch();
 
         return redirect()
-        ->route('admin.projects.index')
-        ->with('success', 'Project updated successfully.');
+            ->route('admin.projects.index')
+            ->with('success', 'Project updated successfully.');
     }
 
-        public function storeMilestone(
+    public function storeMilestone(
         Request $request,
         Project $project
-    )
-    {
+    ) {
         $user = auth()->user();
 
         $validated = $request->validate([
@@ -190,24 +188,20 @@ class AdminProjectController extends Controller
                 'user_id' => $milestone->user_id,
                 'description' => $milestone->description,
 
-                'user' =>
-                    $milestone->user?->fullname
+                'user' => $milestone->user?->fullname
                     ?? 'Unknown User',
 
-                'created_at' =>
-                    $milestone->created_at->format(
-                        'h:i A'
-                    ),
+                'created_at' => $milestone->created_at->format(
+                    'h:i A'
+                ),
             ],
         ]);
     }
 
-
     public function destroyMilestone(
         Project $project,
         ProjectMilestone $milestone
-    )
-    {
+    ) {
         abort_unless(
             $milestone->project_id == $project->id,
             404
@@ -225,10 +219,7 @@ class AdminProjectController extends Controller
         $project->delete();
 
         return redirect()
-        ->route('admin.projects.index')
-        ->with('success', 'Project deleted successfully.');
+            ->route('admin.projects.index')
+            ->with('success', 'Project deleted successfully.');
     }
-
-
-
 }

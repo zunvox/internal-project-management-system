@@ -23,9 +23,9 @@ class LoginController extends Controller
      */
     public function store(Request $request): RedirectResponse
     {
-        //Step 1: Validate the submitted form.
+        // Step 1: Validate the submitted form.
         $credentials = $request->validate([
-            'email'=> [
+            'email' => [
                 'required',
                 'email',
             ],
@@ -35,59 +35,55 @@ class LoginController extends Controller
             ],
         ]);
 
-        //Step 2: Attempt to log the user in.
-        if (! Auth::attempt($credentials, $request->boolean('remember')))
-            {
-                return back()
+        // Step 2: Attempt to log the user in.
+        if (! Auth::attempt($credentials, $request->boolean('remember'))) {
+            return back()
                 ->withErrors([
                     'email' => 'The email or password is incorrect. ',
                 ])
-                -> onlyInput('email');
-            }
+                ->onlyInput('email');
+        }
 
-            //Step 3: Get the authenticated user.
-            $user = Auth::user();
+        // Step 3: Get the authenticated user.
+        $user = Auth::user();
 
-            //Step 4: Prevent inactive user from entering the system
-            if (! $user->isActive())
-                {
-                    Auth::logout();
+        // Step 4: Prevent inactive user from entering the system
+        if (! $user->isActive()) {
+            Auth::logout();
 
-                    $request->session()->invalidate();
-                    $request->session()->regenerateToken();
+            $request->session()->invalidate();
+            $request->session()->regenerateToken();
 
-                    return back()
-                    ->withErrors([
-                        'email' => 'Your account is inactive. Please contact the administrator.',
-                    ])
-                    ->onlyInput('email');
-                }
+            return back()
+                ->withErrors([
+                    'email' => 'Your account is inactive. Please contact the administrator.',
+                ])
+                ->onlyInput('email');
+        }
 
-                //Step 5: Regenerate the session for security
-                $request->session()->regenerate();
+        // Step 5: Regenerate the session for security
+        $request->session()->regenerate();
 
-                //Step 6: Redirect the user based on their role
-                if ($user->isAdmin())
-                    {
-                        return redirect()->route('admin.dashboard');
-                    }
+        // Step 6: Redirect the user based on their role
+        if ($user->isAdmin()) {
+            return redirect()->route('admin.dashboard');
+        }
 
-                if ($user->isDeveloper())
-                    {
-                        return redirect()->route('developer.dashboard');
-                    }
+        if ($user->isDeveloper()) {
+            return redirect()->route('developer.dashboard');
+        }
 
-                    //Safety fallback if the user's role is not recognised.
-                    Auth::logout();
+        // Safety fallback if the user's role is not recognised.
+        Auth::logout();
 
-                    $request->session()->invalidate();
-                    $request->session()->regenerateToken();
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
 
-                    return redirect()
-                    ->route('login')
-                    ->withErrors([
-                        'email' => 'Your account does not have a valid role.',
-                    ]); 
+        return redirect()
+            ->route('login')
+            ->withErrors([
+                'email' => 'Your account does not have a valid role.',
+            ]);
     }
 
     /**
@@ -101,7 +97,7 @@ class LoginController extends Controller
         $request->session()->regenerateToken();
 
         return redirect()
-        ->route('login')
-        ->with('success', 'You have been logged out successfully.');
+            ->route('login')
+            ->with('success', 'You have been logged out successfully.');
     }
 }

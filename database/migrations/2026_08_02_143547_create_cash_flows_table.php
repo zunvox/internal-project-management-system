@@ -28,6 +28,7 @@ return new class extends Migration
 
             $table->string('subject', 200);
             $table->date('transaction_date');
+            $table->string('other_category')->nullable();
             $table->decimal('amount', 12, 2);
             $table->text('description')->nullable();
 

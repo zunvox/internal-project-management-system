@@ -3,14 +3,15 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\Claim;
 use App\Models\Invoice;
 use App\Models\PaymentVoucher;
-use App\Models\Claim;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 
 class PaymentVoucherController extends Controller
-{   
+{
     /* Payment Voucher Management List */
     public function index(Request $request): View
     {
@@ -23,11 +24,11 @@ class PaymentVoucherController extends Controller
             'user',
             'project',
         ])
-        ->whereIn('status', [
-            'Submitted',
-            'Approved',
-            'Rejected',
-        ]);
+            ->whereIn('status', [
+                'Submitted',
+                'Approved',
+                'Rejected',
+            ]);
 
         /*
         * Claim requests.
@@ -36,43 +37,39 @@ class PaymentVoucherController extends Controller
             'user',
             'category',
         ])
-        ->whereIn('status', [
-            'Submitted',
-            'Approved',
-            'Rejected',
-        ]);
+            ->whereIn('status', [
+                'Submitted',
+                'Approved',
+                'Rejected',
+            ]);
 
         /*
         * Counts include both invoices and claims.
         */
         $counts = [
-            'all' =>
-                (clone $invoiceQuery)->count()
+            'all' => (clone $invoiceQuery)->count()
                 +
                 (clone $claimQuery)->count(),
 
-            'submitted' =>
-                (clone $invoiceQuery)
-                    ->where('status', 'Submitted')
-                    ->count()
+            'submitted' => (clone $invoiceQuery)
+                ->where('status', 'Submitted')
+                ->count()
                 +
                 (clone $claimQuery)
                     ->where('status', 'Submitted')
                     ->count(),
 
-            'approved' =>
-                (clone $invoiceQuery)
-                    ->where('status', 'Approved')
-                    ->count()
+            'approved' => (clone $invoiceQuery)
+                ->where('status', 'Approved')
+                ->count()
                 +
                 (clone $claimQuery)
                     ->where('status', 'Approved')
                     ->count(),
 
-            'rejected' =>
-                (clone $invoiceQuery)
-                    ->where('status', 'Rejected')
-                    ->count()
+            'rejected' => (clone $invoiceQuery)
+                ->where('status', 'Rejected')
+                ->count()
                 +
                 (clone $claimQuery)
                     ->where('status', 'Rejected')
@@ -122,12 +119,11 @@ class PaymentVoucherController extends Controller
         );
     }
 
-
-    /*View One Invoice Request*/
+    /* View One Invoice Request */
 
     public function showInvoice(Invoice $invoice): View
     {
-        /*Draft invoices must never appearin the admin review section.*/
+        /* Draft invoices must never appearin the admin review section. */
 
         abort_if(
             $invoice->status === 'Draft',
@@ -144,7 +140,7 @@ class PaymentVoucherController extends Controller
         return view('admin.payment-vouchers.show-invoice', compact('invoice'));
     }
 
-    /*View One Claim Request*/
+    /* View One Claim Request */
     public function showClaim(Claim $claim): View
     {
         $claim->load([
@@ -157,10 +153,10 @@ class PaymentVoucherController extends Controller
         return view('admin.payment-vouchers.show-claim', compact('claim'));
     }
 
-    /*Approve Submitted Claim*/
+    /* Approve Submitted Claim */
     public function approveClaim(Request $request, Claim $claim)
     {
-        /*Only submitted claim can be approved.*/
+        /* Only submitted claim can be approved. */
         abort_unless($claim->status === 'Submitted', 403);
 
         $request->validate([
@@ -179,13 +175,13 @@ class PaymentVoucherController extends Controller
         ]);
 
         return redirect()->route('admin.payment-vouchers.claims.show', $claim)
-        ->with('success', 'Claim approved successfully.');
+            ->with('success', 'Claim approved successfully.');
     }
 
     /* Reject Submitted Claim */
-    public function rejectClaim(Request $request, Claim $claim) 
+    public function rejectClaim(Request $request, Claim $claim)
     {
-        /* Only Submitted claims can be rejected.*/
+        /* Only Submitted claims can be rejected. */
         abort_unless($claim->status === 'Submitted', 403);
 
         $request->validate([
@@ -208,12 +204,12 @@ class PaymentVoucherController extends Controller
     }
 
     /* Generate Payment Voucher For Claim */
-    public function generateClaimVoucher(Claim $claim) 
+    public function generateClaimVoucher(Claim $claim)
     {
-        /*Voucher can only be generated for an approved claim.*/
+        /* Voucher can only be generated for an approved claim. */
         abort_unless($claim->status === 'Approved', 403);
 
-        /*Prevent duplicate vouchers.*/
+        /* Prevent duplicate vouchers. */
         abort_if($claim->paymentVoucher()->exists(), 403, 'A payment voucher has already been generated for this claim.');
 
         PaymentVoucher::create([
@@ -222,40 +218,32 @@ class PaymentVoucherController extends Controller
             'invoice_id' => null,
             'claim_id' => $claim->id,
 
-            'voucher_code' =>
-                $this->generateVoucherCode(),
+            'voucher_code' => $this->generateVoucherCode(),
 
-            'amount' =>
-                $claim->amount,
+            'amount' => $claim->amount,
 
-            'payment_method' => 
-                'Bank Transfer',
+            'payment_method' => 'Bank Transfer',
 
-            'notes' =>
-                $claim->review_notes,
+            'notes' => $claim->review_notes,
 
-            'status' =>
-                'Generated',
+            'status' => 'Generated',
 
-            'reviewed_at' =>
-                $claim->reviewed_at,
+            'reviewed_at' => $claim->reviewed_at,
 
-            'generated_at' =>
-                now(),
+            'generated_at' => now(),
         ]);
 
         return redirect()->route('admin.payment-vouchers.claims.show', $claim)
             ->with('success', 'Payment voucher generated successfully.');
     }
 
-
-    /*Approve Submitted Invoice*/
+    /* Approve Submitted Invoice */
 
     public function approveInvoice(
         Request $request,
         Invoice $invoice
     ) {
-        /*Only Submitted invoices are allowed to be approved.*/
+        /* Only Submitted invoices are allowed to be approved. */
 
         abort_unless(
             $invoice->status === 'Submitted',
@@ -288,14 +276,13 @@ class PaymentVoucherController extends Controller
             );
     }
 
-
-    /*Reject Submitted Invoice*/
+    /* Reject Submitted Invoice */
 
     public function rejectInvoice(
         Request $request,
         Invoice $invoice
     ) {
-        /* Only Submitted invoices are allowed to be rejected.*/
+        /* Only Submitted invoices are allowed to be rejected. */
 
         abort_unless(
             $invoice->status === 'Submitted',
@@ -330,10 +317,8 @@ class PaymentVoucherController extends Controller
 
     /* Generate Payment Voucher */
 
-    public function generateVoucher(
-        Request $request,
-        Invoice $invoice
-    ) {
+    public function generateVoucher(Invoice $invoice)
+    {
         // Voucher can only be generated for an approved invoice
         abort_unless(
             $invoice->status === 'Approved',
@@ -347,13 +332,6 @@ class PaymentVoucherController extends Controller
             'A payment voucher has already been generated for this invoice.'
         );
 
-        $validated = $request->validate([
-            'payment_method' => [
-                'required',
-                'in:Bank Transfer,Cash,Cheque,Online Payment,Other',
-            ],
-        ]);
-
         PaymentVoucher::create([
             'reviewed_by' => $invoice->reviewed_by,
             'invoice_id' => $invoice->id,
@@ -363,7 +341,7 @@ class PaymentVoucherController extends Controller
 
             'amount' => $invoice->grand_total,
 
-            'payment_method' => $validated['payment_method'],
+            'payment_method' => 'Bank Transfer',
             'notes' => $invoice->review_notes,
 
             'status' => 'Generated',
@@ -392,9 +370,9 @@ class PaymentVoucherController extends Controller
         $nextNumber = (PaymentVoucher::max('id') ?? 0) + 1;
 
         do {
-            $code = 'PV-' .
-                $year .
-                '-' .
+            $code = 'PV-'.
+                $year.
+                '-'.
                 str_pad(
                     $nextNumber,
                     4,
@@ -403,11 +381,29 @@ class PaymentVoucherController extends Controller
                 );
 
             $nextNumber++;
-        }
-        while (
+        } while (
             PaymentVoucher::where('voucher_code', $code)->exists()
         );
 
         return $code;
+    }
+
+    public function downloadPdf(PaymentVoucher $paymentVoucher)
+    {
+        $paymentVoucher->load([
+            'invoice.user',
+            'invoice.project',
+            'claim.user',
+            'claim.category',
+            'reviewer',
+        ]);
+
+        $pdf = Pdf::loadView(
+            'admin.payment-vouchers.pdf',
+            compact('paymentVoucher')
+        )->setPaper('a4', 'portrait');
+
+        return $pdf->stream('Payment-Voucher-'.$paymentVoucher->id.'.pdf');
+
     }
 }

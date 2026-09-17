@@ -22,7 +22,7 @@ class PaymentVoucherSampleSeeder extends Seeder
 
         $admin = User::where('role', 'Admin')->first();
 
-        if (!$developer || !$admin) {
+        if (! $developer || ! $admin) {
             $this->command->error(
                 'You need at least one Developer and one Admin account first.'
             );
@@ -43,7 +43,7 @@ class PaymentVoucherSampleSeeder extends Seeder
             }
         )->first();
 
-        if (!$project) {
+        if (! $project) {
             $this->command->error(
                 'The Developer must be assigned to at least one project.'
             );
@@ -66,8 +66,7 @@ class PaymentVoucherSampleSeeder extends Seeder
                 'project_id' => $project->id,
 
                 'subject' => 'Website Development',
-                'description' =>
-                    'Development work completed for the assigned project.',
+                'description' => 'Development work completed for the assigned project.',
 
                 'status' => 'Submitted',
 
@@ -116,8 +115,7 @@ class PaymentVoucherSampleSeeder extends Seeder
                 'project_id' => $project->id,
 
                 'subject' => 'Software Maintenance',
-                'description' =>
-                    'Minor software maintenance and bug fixing.',
+                'description' => 'Minor software maintenance and bug fixing.',
 
                 'status' => 'Submitted',
 
@@ -158,8 +156,7 @@ class PaymentVoucherSampleSeeder extends Seeder
                 'project_id' => $project->id,
 
                 'subject' => 'Database Configuration',
-                'description' =>
-                    'Database configuration and optimization.',
+                'description' => 'Database configuration and optimization.',
 
                 'status' => 'Submitted',
 
@@ -200,8 +197,7 @@ class PaymentVoucherSampleSeeder extends Seeder
                 'project_id' => $project->id,
 
                 'subject' => 'API Integration',
-                'description' =>
-                    'Integration of external API services.',
+                'description' => 'Integration of external API services.',
 
                 'status' => 'Approved',
 
@@ -215,8 +211,7 @@ class PaymentVoucherSampleSeeder extends Seeder
                 'reviewed_by' => $admin->id,
                 'reviewed_at' => now()->subDays(14),
 
-                'review_notes' =>
-                    'Invoice reviewed and approved.',
+                'review_notes' => 'Invoice reviewed and approved.',
             ]
         );
 
@@ -257,8 +252,7 @@ class PaymentVoucherSampleSeeder extends Seeder
 
                 'payment_method' => 'Bank Transfer',
 
-                'notes' =>
-                    'Payment to be processed through bank transfer.',
+                'notes' => 'Payment to be processed through bank transfer.',
 
                 'status' => 'Generated',
 
@@ -282,8 +276,7 @@ class PaymentVoucherSampleSeeder extends Seeder
                 'project_id' => $project->id,
 
                 'subject' => 'Equipment Purchase',
-                'description' =>
-                    'Equipment purchase submitted for project work.',
+                'description' => 'Equipment purchase submitted for project work.',
 
                 'status' => 'Rejected',
 
@@ -297,8 +290,7 @@ class PaymentVoucherSampleSeeder extends Seeder
                 'reviewed_by' => $admin->id,
                 'reviewed_at' => now()->subDays(18),
 
-                'review_notes' =>
-                    'Supporting document does not match the submitted amount.',
+                'review_notes' => 'Supporting document does not match the submitted amount.',
             ]
         );
 

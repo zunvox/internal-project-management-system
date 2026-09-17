@@ -47,7 +47,6 @@ class ClaimCategorySeeder extends Seeder
             ],
         ];
 
-
         foreach ($categories as $category) {
 
             ClaimCategory::updateOrCreate(

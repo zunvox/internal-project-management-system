@@ -11,7 +11,7 @@ use Illuminate\View\View;
 
 class DeveloperClaimController extends Controller
 {
-    /*Claim List*/
+    /* Claim List */
 
     public function index(Request $request): View
     {
@@ -20,7 +20,7 @@ class DeveloperClaimController extends Controller
         $status = $request->query('status');
 
         $baseQuery = Claim::with(['category'])
-        ->where('user_id', $user->id);
+            ->where('user_id', $user->id);
 
         $counts = [
             'all' => (clone $baseQuery)->count(),
@@ -63,20 +63,19 @@ class DeveloperClaimController extends Controller
         );
     }
 
-
-    /*Create Claim Page*/
+    /* Create Claim Page */
 
     public function create(): View
     {
-        /*Only active claim categories.*/
+        /* Only active claim categories. */
         $categories = ClaimCategory::where(
             'is_active',
             true
         )
-        ->orderBy('category_name')
-        ->get();
+            ->orderBy('category_name')
+            ->get();
 
-        /*Preview Claim ID*/
+        /* Preview Claim ID */
         $claimCode = $this->generateClaimCode();
 
         return view(
@@ -85,16 +84,15 @@ class DeveloperClaimController extends Controller
         );
     }
 
-
-    /* Store Claim*/
+    /* Store Claim */
 
     public function store(Request $request)
     {
         $user = auth()->user();
 
         $selectedCategory = ClaimCategory::where('id', $request->category_id)
-        ->where('is_active', true)
-        ->first();
+            ->where('is_active', true)
+            ->first();
 
         $isOtherCategory =
             $selectedCategory && $selectedCategory->category_name === 'Other';
@@ -144,9 +142,8 @@ class DeveloperClaimController extends Controller
             'id',
             $validated['category_id']
         )
-        ->where('is_active', true)
-        ->firstOrFail();
-
+            ->where('is_active', true)
+            ->firstOrFail();
 
         /*
          * Upload receipt.
@@ -157,7 +154,6 @@ class DeveloperClaimController extends Controller
                 'claim-receipts',
                 'public'
             );
-
 
         /*
          * Create Claim.
@@ -171,34 +167,24 @@ class DeveloperClaimController extends Controller
                 ? $validated['other_category']
                 : null,
 
-            'claim_code' =>
-                $this->generateClaimCode(),
+            'claim_code' => $this->generateClaimCode(),
 
-            'title' =>
-                $validated['title'],
+            'title' => $validated['title'],
 
-            'amount' =>
-                $validated['amount'],
+            'amount' => $validated['amount'],
 
-            'receipt' =>
-                $receiptPath,
+            'receipt' => $receiptPath,
 
-            'description' =>
-                $validated['description'] ?? null,
+            'description' => $validated['description'] ?? null,
 
-            'status' =>
-                'Submitted',
+            'status' => 'Submitted',
 
-            'submitted_at' =>
-                now(),
+            'submitted_at' => now(),
 
-            'reviewed_by' =>
-                null,
+            'reviewed_by' => null,
 
-            'reviewed_at' =>
-                null,
+            'reviewed_at' => null,
         ]);
-
 
         return redirect()
             ->route('developer.claims.index')
@@ -208,8 +194,7 @@ class DeveloperClaimController extends Controller
             );
     }
 
-
-    /*View Claim*/
+    /* View Claim */
 
     public function show(Claim $claim): View
     {
@@ -237,41 +222,37 @@ class DeveloperClaimController extends Controller
         );
     }
 
-
-    /*Delete Claim*/
+    /* Delete Claim */
 
     public function destroy(Claim $claim)
     {
         $user = auth()->user();
 
-        /*Developer can only delete their own claim.*/
+        /* Developer can only delete their own claim. */
         abort_unless(
             $claim->user_id === $user->id,
             403
         );
 
-        /*don't allow deleting claims that Admin has already reviewed.*/
+        /* don't allow deleting claims that Admin has already reviewed. */
         abort_unless(
             $claim->status === 'Submitted',
             403
         );
 
-        /*Prevent deletion if it has already been reviewed.*/
+        /* Prevent deletion if it has already been reviewed. */
         abort_if(
             $claim->reviewed_at !== null,
             403
         );
 
-
-        /*Remove stored receipt.*/
+        /* Remove stored receipt. */
         if ($claim->receipt) {
             Storage::disk('public')
                 ->delete($claim->receipt);
         }
 
-
         $claim->delete();
-
 
         return redirect()
             ->route('developer.claims.index')
@@ -281,8 +262,7 @@ class DeveloperClaimController extends Controller
             );
     }
 
-
-    /*Generate Claim Code*/
+    /* Generate Claim Code */
 
     private function generateClaimCode(): string
     {
@@ -294,7 +274,7 @@ class DeveloperClaimController extends Controller
             : 1;
 
         do {
-            $code = 'CLM-' . str_pad(
+            $code = 'CLM-'.str_pad(
                 $nextNumber,
                 4,
                 '0',

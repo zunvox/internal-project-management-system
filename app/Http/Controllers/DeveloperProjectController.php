@@ -7,7 +7,6 @@ use App\Models\ProjectMilestone;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 
-
 class DeveloperProjectController extends Controller
 {
     public function index(): View
@@ -19,20 +18,18 @@ class DeveloperProjectController extends Controller
             'assignedUsers',
             'milestones.user',
         ])
-        ->whereHas('assignedUsers', function($query) use ($user)
-        {
-            $query->where('users.id', $user->id);
-        })
-        ->latest()
-        ->get();
+            ->whereHas('assignedUsers', function ($query) use ($user) {
+                $query->where('users.id', $user->id);
+            })
+            ->latest()
+            ->get();
 
-        $notStartedProjects = $projects->where('status', 'Not Started');
         $ongoingProjects = $projects->where('status', 'Ongoing');
         $completedProjects = $projects->where('status', 'Completed');
         $onHoldProjects = $projects->where('status', 'On Hold');
 
         $projectData = $projects->mapWithKeys(function ($project) {
-             return [
+            return [
                 $project->id => [
                     'id' => $project->id,
                     'name' => $project->name,
@@ -64,7 +61,6 @@ class DeveloperProjectController extends Controller
 
         return view('developer.projects.index', compact(
             'projects',
-            'notStartedProjects',
             'ongoingProjects',
             'completedProjects',
             'onHoldProjects',
@@ -73,83 +69,77 @@ class DeveloperProjectController extends Controller
     }
 
     public function storeMilestone(
-    Request $request,
-    Project $project
-)
-{
-    $user = auth()->user();
+        Request $request,
+        Project $project
+    ) {
+        $user = auth()->user();
 
-    $isAssigned = $project->assignedUsers()
-        ->where('users.id', $user->id)
-        ->exists();
+        $isAssigned = $project->assignedUsers()
+            ->where('users.id', $user->id)
+            ->exists();
 
-    abort_unless($isAssigned, 403);
+        abort_unless($isAssigned, 403);
 
-    $validated = $request->validate([
-        'description' => [
-            'required',
-            'string',
-            'max:2000',
-        ],
-    ]);
+        $validated = $request->validate([
+            'description' => [
+                'required',
+                'string',
+                'max:2000',
+            ],
+        ]);
 
-    $milestone = ProjectMilestone::create([
-        'project_id' => $project->id,
-        'user_id' => $user->id,
-        'description' => $validated['description'],
-    ]);
+        $milestone = ProjectMilestone::create([
+            'project_id' => $project->id,
+            'user_id' => $user->id,
+            'description' => $validated['description'],
+        ]);
 
-    $milestone->load('user');
+        $milestone->load('user');
 
-    return response()->json([
-        'success' => true,
+        return response()->json([
+            'success' => true,
 
-        'milestone' => [
-            'id' => $milestone->id,
+            'milestone' => [
+                'id' => $milestone->id,
 
-            'description' =>
-                $milestone->description,
+                'description' => $milestone->description,
 
-            'user' =>
-                $milestone->user?->fullname
-                ?? 'Unknown Developer',
+                'user' => $milestone->user?->fullname
+                    ?? 'Unknown Developer',
 
-            'created_at' =>
-                $milestone->created_at->format(
+                'created_at' => $milestone->created_at->format(
                     'd F Y, h:i A'
                 ),
-        ],
-    ]);
-}
+            ],
+        ]);
+    }
 
-public function destroyMilestone(
-    Project $project,
-    ProjectMilestone $milestone
-)
-{
-    $user = auth()->user();
+    public function destroyMilestone(
+        Project $project,
+        ProjectMilestone $milestone
+    ) {
+        $user = auth()->user();
 
-    $isAssigned = $project->assignedUsers()
-        ->where('users.id', $user->id)
-        ->exists();
+        $isAssigned = $project->assignedUsers()
+            ->where('users.id', $user->id)
+            ->exists();
 
-    abort_unless($isAssigned, 403);
+        abort_unless($isAssigned, 403);
 
-    abort_unless(
-        $milestone->project_id === $project->id,
-        404
-    );
+        abort_unless(
+            $milestone->project_id === $project->id,
+            404
+        );
 
-    abort_unless(
-        $milestone->user_id === $user->id,
-        403
-    );
+        abort_unless(
+            $milestone->user_id === $user->id,
+            403
+        );
 
-    $milestone->delete();
+        $milestone->delete();
 
-    return response()->json([
-        'success' => true,
-    ]);
-}
-
+        return response()->json([
+            'success' => true,
+        ]);
+    }
 }

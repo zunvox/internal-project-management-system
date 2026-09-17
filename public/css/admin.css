@@ -29,60 +29,133 @@
 
 /* ---------- Topbar ---------- */
 
-.topbar{
-    background:black;
-    padding:12px 0;
-    text-align:center;
+  .topbar{
+    position:relative;
+    height:46px;
+    min-height:46px;
+    background:#000;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:0 18px;
+    box-sizing:border-box;
   }
 
   .topbar-brand{
+    color:#5B8DEF;
     font-size:14px;
     font-weight:700;
     letter-spacing:0.08em;
-    color:#5B8DEF;
     text-transform:uppercase;
   }
 
-.topbar-right{
-  grid-column:0;
-  display:flex;
-  justify-content:flex-end;
-}
-
-
-.profile-btn{
+  .topbar-right{
     position:absolute;
-  display:flex;
-  align-items:center;
-  gap:6px;
-  background:none;
-  border:none;
-  font-size:15px;
-  padding: 0.5px 20px;
-  border-radius:5px;
-  cursor:pointer;
-  transition:background 0.15s ease;
+    right:18px;
+    top:50%;
+    transform:translateY(-50%);
+    display:flex;
+    align-items:center;
+  }
+
+  .profile-menu{
+    position:relative;
+  }
+
+  .profile-btn{
+    display:flex;
+    align-items:center;
+    gap:6px;
+    background:none;
+    border:none;
+    padding:4px 6px;
+    cursor:pointer;
+  }
+
+  .profile-btn:hover{
+    background:rgba(255,255,255,0.08);
+  }
+
+  .profile-avatar{
+    width:28px;
+    height:28px;
+    border-radius:50%;
+    background:white;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:13px;
+    font-weight:700;
+    overflow:hidden;
+  }
+
+  .profile-name{
+    color:white;
+    font-size:14px;
+    font-weight:600;
+  }
+
+  .profile-menu{
+      position:relative;
+  }
+
+  .profile-avatar img{
+    width:100%;
+    height:100%;
+    object-fit:cover;
+    border-radius:50%;
+  }
+
+  .profile-dropdown{
+      position:absolute;
+      top:100%;
+      right:0;
+      width:120px;
+      background:#ffffff;
+      border:1px solid #111;
+      border-radius:3px;
+      display:none;
+      z-index:1000;
+  }
+
+.profile-dropdown.show{
+    display:block;
 }
 
-.profile-btn:hover{
-  background:rgba(255,255,255,0.08);
+.profile-dropdown-item{
+    width:100%;
+
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+
+    padding:7px 8px;
+
+    background:#ffffff;
+    border:none;
+
+    color:#111;
+    text-decoration:none;
+
+    font-family:'Inter', sans-serif;
+    font-size:13px;
+    font-weight:600;
+
+    cursor:pointer;
+    box-sizing:border-box;
 }
 
-.profile-avatar{
-  width:25px;
-  height:25px;
-  border-radius:50%;
-  background:white;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  overflow:hidden;
+.profile-dropdown-item:hover{
+    background:#f3f3f3;
 }
 
-.profile-name{
-  color:white;
-  font-size:14px;
-  font-weight:600;
+.profile-dropdown form{
+    margin:0;
+    border-top:1px solid #111;
+}
+
+.dropdown-icon{
+    font-size:16px;
 }
 
 /* ---------- Navigation bar ---------- */

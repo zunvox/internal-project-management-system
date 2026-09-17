@@ -12,104 +12,99 @@ use Illuminate\View\View;
 
 class UserManagementController extends Controller
 {
-    /*Display the User Management list.*/
-    
+    /* Display the User Management list. */
+
     public function index(Request $request): View
     {
         $query = User::query();
         // dd($query);
 
-        /*Search (by name,email,phone*/
+        /* Search (by name,email,phone */
 
-        if ($request->filled('search')) 
-            {
-                $search = $request->search;
+        if ($request->filled('search')) {
+            $search = $request->search;
 
-                $query->where(function ($userQuery) use ($search) 
-                {
-                    $userQuery
-                        ->where('username', 'like', "%{$search}%")
-                        ->orWhere('fullname','like',"%{$search}%")
-                        ->orWhere('email', 'like', "%{$search}%")
-                        ->orWhere('phone', 'like', "%{$search}%");
-                });
-            }
+            $query->where(function ($userQuery) use ($search) {
+                $userQuery
+                    ->where('username', 'like', "%{$search}%")
+                    ->orWhere('fullname', 'like', "%{$search}%")
+                    ->orWhere('email', 'like', "%{$search}%")
+                    ->orWhere('phone', 'like', "%{$search}%");
+            });
+        }
 
-        /*Role filter*/
+        /* Role filter */
 
-        if ($request->filled('role')) 
-            {
-                $query->where('role', $request->role);
-            }
+        if ($request->filled('role')) {
+            $query->where('role', $request->role);
+        }
 
-        /*Status filter*/
+        /* Status filter */
 
-        if ($request->filled('status')) 
-            {
-                $query->where('status', $request->status);
-            }
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
+        }
 
         $users = $query
             ->orderByDesc('id')
             ->paginate(10)
             ->withQueryString();
 
-            $allCount = User::count();
+        $allCount = User::count();
 
-            $developerCount = User::where('role', 'Developer')->count();
+        $developerCount = User::where('role', 'Developer')->count();
 
-            $adminCount = User::where('role', 'Admin')->count();
+        $adminCount = User::where('role', 'Admin')->count();
 
-            $activeCount = User::where('status', 'Active')->count();
+        $activeCount = User::where('status', 'Active')->count();
 
-            $inactiveCount = User::where('status', 'Inactive')->count();
+        $inactiveCount = User::where('status', 'Inactive')->count();
 
-            // var_dump($users);
-            // exit
+        // var_dump($users);
+        // exit
 
         return view('admin.admin-user.users-index', compact('users', 'allCount', 'developerCount', 'adminCount', 'activeCount', 'inactiveCount'));
     }
 
-    /* Display the Add User page.*/
+    /* Display the Add User page. */
 
     public function create(): View
     {
         return view('admin.admin-user.create-user');
     }
 
-    /* Store a newly created user.*/
+    /* Store a newly created user. */
 
     public function store(Request $request): RedirectResponse
     {
         $validated = $request->validate([
-            'userid' => ['required', 'string', 'max:30', 'unique:users,userid',],
-            
-            'fullname' => ['required', 'string', 'max:130',],
+            'userid' => ['required', 'string', 'max:30', 'unique:users,userid'],
 
-            'username' => ['nullable','string','max:150','unique:users,username',],
+            'fullname' => ['required', 'string', 'max:130'],
 
-            'email' => ['required','email','max:255','unique:users,email',],
+            'username' => ['nullable', 'string', 'max:150', 'unique:users,username'],
 
-            'phone' => ['nullable','string','max:30',],
+            'email' => ['required', 'email', 'max:255', 'unique:users,email'],
 
-            'address' => ['nullable','string','max:1000',],
+            'phone' => ['nullable', 'string', 'max:30'],
 
-            'role' => ['required',Rule::in(['Admin', 'Developer']),],
+            'address' => ['nullable', 'string', 'max:1000'],
 
-            'status' => ['required',Rule::in(['Active', 'Inactive']),],
+            'role' => ['required', Rule::in(['Admin', 'Developer'])],
 
-            'password' => ['required','string','min:8', "confirmed"],['password.confirmed' => 'The password confirmation does not match.',],
+            'status' => ['required', Rule::in(['Active', 'Inactive'])],
 
-            'profile_picture' => ['nullable','image','mimes:jpg,jpeg,png,webp','max:2048',],
+            'password' => ['required', 'string', 'min:8', 'confirmed'], ['password.confirmed' => 'The password confirmation does not match.'],
+
+            'profile_picture' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
         ]);
 
-        /* Profile picture*/
+        /* Profile picture */
 
-        if ($request->hasFile('profile_picture')) 
-            {
-                $validated['profile_picture'] = $request->file('profile_picture')
-                                                ->store('profile-pictures', 'public');
-            }
+        if ($request->hasFile('profile_picture')) {
+            $validated['profile_picture'] = $request->file('profile_picture')
+                ->store('profile-pictures', 'public');
+        }
 
         /* Create user */
 
@@ -136,81 +131,74 @@ class UserManagementController extends Controller
         return view('admin.admin-user.edit-user', compact('user'));
     }
 
-    /* Update an existing user.*/
+    /* Update an existing user. */
 
-    public function update( Request $request, User $user): RedirectResponse 
+    public function update(Request $request, User $user): RedirectResponse
     {
-        $validated = $request->validate
-        ([
-            'userid' => ['required', 'string', 'max:30',],
-            
-            'fullname' => ['required', 'string', 'max:130',],
+        $validated = $request->validate([
+            'userid' => ['required', 'string', 'max:30'],
 
-            'username' => ['nullable','string','max:150',],
+            'fullname' => ['required', 'string', 'max:130'],
 
-            'email' => ['required','email','max:255',
+            'username' => ['nullable', 'string', 'max:150'],
+
+            'email' => ['required', 'email', 'max:255',
 
                 Rule::unique('users', 'email')
                     ->ignore($user->id),
             ],
 
-            'phone' => ['nullable','string','max:30',],
+            'phone' => ['nullable', 'string', 'max:30'],
 
-            'address' => [ 'nullable','string','max:1000',],
+            'address' => ['nullable', 'string', 'max:1000'],
 
-            'role' => [ 'required', Rule::in(['Admin', 'Developer']),
+            'role' => ['required', Rule::in(['Admin', 'Developer']),
             ],
 
-            'status' => [ 'required', Rule::in(['Active', 'Inactive']),
+            'status' => ['required', Rule::in(['Active', 'Inactive']),
             ],
 
-            'password' => ['nullable','string','min:8','confirmed',],
+            'password' => ['nullable', 'string', 'min:8', 'confirmed'],
 
-            'profile_picture' => ['nullable','image','mimes:jpg,jpeg,png,webp', 'max:2048',],
+            'profile_picture' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
         ]);
 
-        /* Protect the currently logged-in Admin*/
+        /* Protect the currently logged-in Admin */
 
-        if ($request->user()->is($user)) 
-            {
-                if ($validated['status'] === 'Inactive') 
-                    {
-                        return back()
-                            ->withErrors([
-                                'status' => 'You cannot deactivate your own account.',
-                            ])->withInput();
+        if ($request->user()->is($user)) {
+            if ($validated['status'] === 'Inactive') {
+                return back()
+                    ->withErrors([
+                        'status' => 'You cannot deactivate your own account.',
+                    ])->withInput();
             }
 
-            if ($validated['role'] !== 'Admin') 
-                {
-                    return back()
-                        ->withErrors([
-                            'role' => 'You cannot remove your own Admin role.',
-                        ])->withInput();
-                }
+            if ($validated['role'] !== 'Admin') {
+                return back()
+                    ->withErrors([
+                        'role' => 'You cannot remove your own Admin role.',
+                    ])->withInput();
+            }
         }
 
         /* Password
          If the password box is empty, keep the existing password.
         */
 
-        if (empty($validated['password'])) 
-            {
-                unset($validated['password']);
+        if (empty($validated['password'])) {
+            unset($validated['password']);
+        }
+
+        /* Replace profile picture */
+
+        if ($request->hasFile('profile_picture')) {
+            if ($user->profile_picture && Storage::disk('public')->exists($user->profile_picture)) {
+                Storage::disk('public')->delete($user->profile_picture);
             }
 
-        /* Replace profile picture*/
-
-        if ($request->hasFile('profile_picture')) 
-            {
-                if ($user->profile_picture && Storage::disk('public')->exists($user->profile_picture)) 
-                {
-                    Storage::disk('public')->delete($user->profile_picture);
-                }
-
-                $validated['profile_picture'] = $request->file('profile_picture')
-                                                ->store('profile-pictures', 'public');
-            }
+            $validated['profile_picture'] = $request->file('profile_picture')
+                ->store('profile-pictures', 'public');
+        }
 
         $user->update($validated);
 

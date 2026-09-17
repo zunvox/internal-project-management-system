@@ -2,18 +2,18 @@
 
 namespace Database\Seeders;
 
+use App\Models\CashFlowCategory;
 use App\Models\User;
 use Illuminate\Database\Seeder;
 
 class DatabaseSeeder extends Seeder
 {
-
     /**
      * Seed the application's database.
      */
     public function run(): void
     {
-        User::create([
+        User::updateOrCreate([
             'userid' => 'ADM-0001',
             'fullname' => 'System Admin',
             'username' => 'SysAdmin',
@@ -24,7 +24,7 @@ class DatabaseSeeder extends Seeder
             'status' => 'Active',
         ]);
 
-        User::create([
+        User::updateOrCreate([
             'userid' => 'DEV-0001',
             'fullname' => 'Test Developer',
             'username' => 'TesDev',
@@ -35,7 +35,7 @@ class DatabaseSeeder extends Seeder
             'status' => 'Active',
         ]);
 
-        User::create([
+        User::updateOrCreate([
             'userid' => 'DEV-0002',
             'fullname' => 'Inactive Developer',
             'username' => 'InacDev',
@@ -46,7 +46,7 @@ class DatabaseSeeder extends Seeder
             'status' => 'Inactive',
         ]);
 
-        User::create([
+        User::updateOrCreate([
             'userid' => 'DEV-0003',
             'fullname' => 'Developer3',
             'username' => 'Dev3',
@@ -57,7 +57,7 @@ class DatabaseSeeder extends Seeder
             'status' => 'Active',
         ]);
 
-        User::create([
+        User::updateOrCreate([
             'userid' => 'DEV-0004',
             'fullname' => 'Developer4',
             'username' => 'Dev4',
@@ -68,7 +68,7 @@ class DatabaseSeeder extends Seeder
             'status' => 'Inactive',
         ]);
 
-        User::create([
+        User::updateOrCreate([
             'userid' => 'ADM-0002',
             'fullname' => 'Admin2',
             'username' => 'Ad2',
@@ -79,7 +79,7 @@ class DatabaseSeeder extends Seeder
             'status' => 'Inactive',
         ]);
 
-        User::create([
+        User::updateOrCreate([
             'userid' => 'DEV-0005',
             'fullname' => 'Developer5',
             'username' => 'Dev5',
@@ -90,7 +90,7 @@ class DatabaseSeeder extends Seeder
             'status' => 'Active',
         ]);
 
-        User::create([
+        User::updateOrCreate([
             'userid' => 'ADM-0003',
             'fullname' => 'Admin3',
             'username' => 'Ad3',
@@ -101,7 +101,7 @@ class DatabaseSeeder extends Seeder
             'status' => 'Active',
         ]);
 
-        User::create([
+        User::updateOrCreate([
             'userid' => 'DEV-0006',
             'fullname' => 'Developer6',
             'username' => 'Dev6',
@@ -112,7 +112,7 @@ class DatabaseSeeder extends Seeder
             'status' => 'Active',
         ]);
 
-        User::create([
+        User::updateOrCreate([
             'userid' => 'DEV-0007',
             'fullname' => 'Developer7',
             'username' => 'Dev7',
@@ -123,7 +123,7 @@ class DatabaseSeeder extends Seeder
             'status' => 'Active',
         ]);
 
-        User::create([
+        User::updateOrCreate([
             'userid' => 'DEV-008',
             'fullname' => 'Developer8',
             'username' => 'Dev8',
@@ -134,8 +134,42 @@ class DatabaseSeeder extends Seeder
             'status' => 'Active',
         ]);
 
-        $this->call([ClaimCategorySeeder::class,]);
+        CashFlowCategory::firstOrCreate([
+            'category_name' => 'Client Payment',
+            'cash_flow_type' => 'Cash In',
+        ], [
+            'is_active' => true,
+        ]);
 
-        
+        CashFlowCategory::firstOrCreate([
+            'category_name' => 'Other Income',
+            'cash_flow_type' => 'Cash In',
+        ], [
+            'is_active' => true,
+        ]);
+
+        CashFlowCategory::firstOrCreate([
+            'category_name' => 'Staff Expense',
+            'cash_flow_type' => 'Cash Out',
+        ], [
+            'is_active' => true,
+        ]);
+
+        CashFlowCategory::firstOrCreate([
+            'category_name' => 'Operational Expense',
+            'cash_flow_type' => 'Cash Out',
+        ], [
+            'is_active' => true,
+        ]);
+
+        CashFlowCategory::firstOrCreate([
+            'category_name' => 'Other Expense',
+            'cash_flow_type' => 'Cash Out',
+        ], [
+            'is_active' => true,
+        ]);
+
+        $this->call([ClaimCategorySeeder::class]);
+
     }
 }

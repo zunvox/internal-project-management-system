@@ -3,10 +3,13 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\CashFlow;
 use App\Models\Claim;
 use App\Models\Invoice;
 use App\Models\PaymentVoucher;
+use App\Models\CashFlowCategory;
 use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 
@@ -154,7 +157,7 @@ class PaymentVoucherController extends Controller
     }
 
     /* Approve Submitted Claim */
-    public function approveClaim(Request $request, Claim $claim)
+    public function approveClaim(Request $request, Claim $claim) 
     {
         /* Only submitted claim can be approved. */
         abort_unless($claim->status === 'Submitted', 403);
@@ -167,15 +170,64 @@ class PaymentVoucherController extends Controller
             ],
         ]);
 
-        $claim->update([
-            'status' => 'Approved',
-            'reviewed_by' => auth()->id(),
-            'reviewed_at' => now(),
-            'review_notes' => $request->notes,
-        ]);
+        $claimCategory = CashFlowCategory::where(
+            'category_name',
+            'Staff Claims'
+        )
+        ->where(
+            'cash_flow_type',
+            'Cash Out'
+        )
+        ->firstOrFail();
+
+
+        DB::transaction(function () use (
+            $request,
+            $claim,
+            $claimCategory
+        ) {
+
+            $claim->update([
+                'status' => 'Approved',
+                'reviewed_by' => auth()->id(),
+                'reviewed_at' => now(),
+                'review_notes' => $request->notes,
+            ]);
+
+
+            CashFlow::create([
+                'logged_by' =>
+                    auth()->id(),
+
+                'flowcategory_id' =>
+                    $claimCategory->id,
+
+                'transaction_code' =>
+                    $this->generateCashFlowCode(),
+
+                'type' =>
+                    'Cash Out',
+
+                'subject' =>
+                     $claim->claim_code . ' - ' . $claim->title,
+
+                'transaction_date' =>
+                    now()->toDateString(),
+
+                'other_category' =>
+                    null,
+
+                'amount' =>
+                    $claim->amount,
+
+                'description' =>
+                    'Approved staff claim '
+                    . $claim->claim_code,
+            ]);
+        });
 
         return redirect()->route('admin.payment-vouchers.claims.show', $claim)
-            ->with('success', 'Claim approved successfully.');
+            ->with('success', 'Claim approved and recorded in cash flow successfully.');
     }
 
     /* Reject Submitted Claim */
@@ -239,12 +291,8 @@ class PaymentVoucherController extends Controller
 
     /* Approve Submitted Invoice */
 
-    public function approveInvoice(
-        Request $request,
-        Invoice $invoice
-    ) {
-        /* Only Submitted invoices are allowed to be approved. */
-
+    public function approveInvoice( Request $request, Invoice $invoice) 
+    {
         abort_unless(
             $invoice->status === 'Submitted',
             403
@@ -258,12 +306,63 @@ class PaymentVoucherController extends Controller
             ],
         ]);
 
-        $invoice->update([
-            'status' => 'Approved',
-            'reviewed_by' => auth()->id(),
-            'reviewed_at' => now(),
-            'review_notes' => $request->notes,
-        ]);
+
+        $invoiceCategory = CashFlowCategory::where(
+            'category_name',
+            'Project Payment'
+        )
+        ->where(
+            'cash_flow_type',
+            'Cash Out'
+        )
+        ->firstOrFail();
+
+
+        DB::transaction(function () use (
+            $request,
+            $invoice,
+            $invoiceCategory
+        ) {
+
+            $invoice->update([
+                'status' => 'Approved',
+                'reviewed_by' => auth()->id(),
+                'reviewed_at' => now(),
+                'review_notes' => $request->notes,
+            ]);
+
+
+            CashFlow::create([
+                'logged_by' =>
+                    auth()->id(),
+
+                'flowcategory_id' =>
+                    $invoiceCategory->id,
+
+                'transaction_code' =>
+                    $this->generateCashFlowCode(),
+
+                'type' =>
+                    'Cash Out',
+
+                'subject' =>
+                    $invoice->invoice_code . ' - ' . $invoice->subject,
+
+                'transaction_date' =>
+                    now()->toDateString(),
+
+                'other_category' =>
+                    null,
+
+                'amount' =>
+                    $invoice->grand_total,
+
+                'description' =>
+                    'Approved invoice '
+                    . $invoice->invoice_code,
+            ]);
+        });
+
 
         return redirect()
             ->route(
@@ -272,7 +371,7 @@ class PaymentVoucherController extends Controller
             )
             ->with(
                 'success',
-                'Invoice approved successfully.'
+                'Invoice approved and recorded in cash flow successfully.'
             );
     }
 
@@ -359,6 +458,32 @@ class PaymentVoucherController extends Controller
                 'success',
                 'Payment voucher generated successfully.'
             );
+    }
+
+    private function generateCashFlowCode(): string
+    {
+        $lastTransaction = CashFlow::whereNotNull('transaction_code')
+            ->orderByDesc('id')
+            ->first();
+
+        if (!$lastTransaction) {
+            $nextNumber = 1;
+        } else {
+            $lastNumber = (int) str_replace(
+                'CF-',
+                '',
+                $lastTransaction->transaction_code
+            );
+
+            $nextNumber = $lastNumber + 1;
+        }
+
+        return 'CF-' . str_pad(
+            $nextNumber,
+            4,
+            '0',
+            STR_PAD_LEFT
+        );
     }
 
     /* Generate Unique Payment Voucher Number */

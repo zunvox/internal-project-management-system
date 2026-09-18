@@ -976,8 +976,7 @@
                                     </td>
 
 
-                                    <td
-                                        class="{{ $cashFlow->type === 'Cash In' ? 'amount-in' : 'amount-out' }}">
+                                    <td class="{{ $cashFlow->type === 'Cash In' ? 'amount-in' : 'amount-out' }}">
 
                                         {{ $cashFlow->type === 'Cash In' ? '+' : '-' }}
 
@@ -1095,7 +1094,7 @@
                         </span>
 
                         <span class="grand-total-amount" id="grand-total-amount">
-                            RM 0.00
+                            RM {{ number_format($grandTotal, 2) }}
                         </span>
 
                     </div>
@@ -1270,10 +1269,6 @@
                 .trim()
                 .toLowerCase();
 
-
-            let grandTotal = 0;
-
-
             rows.forEach(function(row) {
                 const rowCategory =
                     row.dataset.category;
@@ -1296,47 +1291,13 @@
 
                 row.style.display =
                     shouldShow ? '' : 'none';
-
-
-                if (shouldShow) {
-                    const amount =
-                        parseFloat(
-                            row.dataset.amount || 0
-                        );
-
-                    const type =
-                        row.dataset.type;
-
-
-                    if (type === 'Cash In') {
-                        grandTotal += amount;
-                    } else {
-                        grandTotal -= amount;
-                    }
-                }
             });
-
-
-            document
-                .getElementById('grand-total-amount')
-                .textContent =
-                'RM ' +
-                grandTotal.toLocaleString(
-                    'en-MY', {
-                        minimumFractionDigits: 2,
-                        maximumFractionDigits: 2
-                    }
-                );
         }
-
-
 
         searchInput.addEventListener(
             'input',
             updateTable
         );
-
-
 
         categoryFilter.addEventListener(
             'change',

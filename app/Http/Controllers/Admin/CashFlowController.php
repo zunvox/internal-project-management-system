@@ -33,10 +33,23 @@ class CashFlowController extends Controller
                 ->count(),
         ];
 
-        if (in_array($type, ['Cash In', 'Cash Out'])) {
+        if (in_array($type, ['Cash In', 'Cash Out'])) 
+        {
             $baseQuery->where('type', $type);
         }
 
+        /* Grand Total across ALL pages */
+        $totalCashIn = (clone $baseQuery)
+            ->where('type', 'Cash In')
+            ->sum('amount');
+
+        $totalCashOut = (clone $baseQuery)
+            ->where('type', 'Cash Out')
+            ->sum('amount');
+
+        $grandTotal = $totalCashIn - $totalCashOut;
+
+        /* Only paginate after calculating total */
         $cashFlows = $baseQuery
             ->orderByDesc('id')
             ->paginate(10)
@@ -52,7 +65,8 @@ class CashFlowController extends Controller
                 'cashFlows',
                 'counts',
                 'categories',
-                'type'
+                'type',
+                'grandTotal'
             )
         );
     }

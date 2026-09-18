@@ -538,7 +538,7 @@
 
                                         <td class="col-price">
                                             <input type="number" name="items[0][unit_price]" class="item-price"
-                                                min="0" step="0.01" value="0" required>
+                                                min="0.01" step="0.01" value=" "placeholder="0.00" required>
                                         </td>
 
                                         <td class="col-amount">
@@ -573,8 +573,8 @@
                                         Tax (%)
                                     </label>
 
-                                    <input id="tax_percentage" name="tax_percentage" type="number" min="0"
-                                        max="100" step="0.01" value="10" placeholder="0">
+                                    <input id="tax_percentage" name="tax_percentage" type="number" min="0.01"
+                                        max="100" step="0.01" value="10" placeholder="0" required>
 
                                 </div>
 
@@ -585,8 +585,8 @@
                                         Discount (RM)
                                     </label>
 
-                                    <input id="discount_amount" name="discount_amount" type="number" min="0"
-                                        step="0.01" value="0" placeholder="0.00">
+                                    <input id="discount_amount" name="discount_amount" type="number" min="0.01"
+                                        step="0.01" value=" " placeholder="0.00">
 
                                 </div>
 

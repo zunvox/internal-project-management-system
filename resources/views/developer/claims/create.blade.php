@@ -492,7 +492,7 @@
                         <div class="acknowledgement">
 
                             <input id="ack" name="acknowledgement" type="checkbox" value="1" required
-                                {{ old('acknowledgement', true) ? 'checked' : '' }}>
+                                {{ old('acknowledgement', false) ? 'checked' : '' }}>
 
                             <label for="ack">I confirm this expense is accurate and compliant.</label>
 

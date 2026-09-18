@@ -10,6 +10,7 @@ use App\Http\Controllers\Auth\ResetPasswordController;
 use App\Http\Controllers\DeveloperClaimController;
 use App\Http\Controllers\DeveloperInvoiceController;
 use App\Http\Controllers\DeveloperProjectController;
+use App\Http\Controllers\DeveloperPaymentVoucherController;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 
@@ -254,6 +255,15 @@ Route::middleware('auth')->group(function () {
             Route::delete('/invoices/{invoice}', [DeveloperInvoiceController::class, 'destroy'])
                 ->name('invoices.destroy');
 
+            Route::get('/claims/{claim}/pdf', [DeveloperClaimController::class, 'downloadPdf'])
+                ->name('claims.pdf');
+
+            Route::get('/payment-vouchers/{paymentVoucher}/pdf', [DeveloperPaymentVoucherController::class, 'downloadPdf'])
+                ->name('payment-vouchers.pdf');
+
+            Route::get('/invoices/{invoice}/pdf', [DeveloperInvoiceController::class, 'downloadPdf'])
+                ->name('invoices.pdf');
+
             /* Claim Expenses Management */
 
             // Claim list
@@ -275,6 +285,9 @@ Route::middleware('auth')->group(function () {
             // Delete claim
             Route::delete('/claims/{claim}', [DeveloperClaimController::class, 'destroy'])
                 ->name('claims.destroy');
+
+            Route::get('/claims/{claim}/pdf', [DeveloperClaimController::class, 'downloadPdf'])
+                ->name('claims.pdf');
         });
 });
 

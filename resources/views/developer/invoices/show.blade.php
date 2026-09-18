@@ -107,6 +107,7 @@
             gap: 8px;
             white-space: nowrap;
             margin-top: 2px;
+            text-decoration:none;
         }
 
         .btn-download svg {
@@ -382,6 +383,7 @@
             align-items: center;
             justify-content: center;
             gap: 8px;
+            text-decoration:none;
         }
 
         .btn-voucher-pdf svg {
@@ -523,11 +525,13 @@
                 </div>
 
 
-                <button class="btn-download" type="button">
+                <a href="{{ route('developer.invoices.pdf', $invoice) }}" class="btn-download" target="_blank">
                     <svg viewBox="0 0 24 24">
                         <path d="M5 20h14v-2H5v2ZM19 9h-4V3H9v6H5l7 7 7-7Z" />
                     </svg>
-                    Download PDF</button>
+
+                    Download PDF
+                </a>
 
             </div>
 
@@ -733,81 +737,70 @@
 
                             </div>
                         @elseif ($invoice->status === 'Approved' && $invoice->paymentVoucher)
-                            @php
-                                $voucher = $invoice->paymentVoucher;
-                            @endphp
 
-                            <div class="voucher-row">
-                                <span class="label">
-                                    Voucher Number
-                                </span>
+                        @php
+                            $voucher = $invoice->paymentVoucher;
+                        @endphp
 
-                                <span class="value">
-                                    {{ $voucher->voucher_code }}
-                                </span>
+                        <div class="voucher-row">
+                            <span class="label">Voucher Number</span>
+                            <span class="value">
+                                {{ $voucher->voucher_code }}
+                            </span>
+                        </div>
+
+                        <div class="voucher-row">
+                            <span class="label">Linked Invoice</span>
+                            <span class="value">
+                                {{ $invoice->invoice_code }}
+                            </span>
+                        </div>
+
+                        <div class="voucher-row">
+                            <span class="label">Approved By</span>
+                            <span class="value">
+                                {{ $voucher->reviewer?->fullname ?? ($voucher->reviewer?->username ?? 'Admin') }}
+                            </span>
+                        </div>
+
+                        <div class="voucher-row">
+                            <span class="label">Approved Date</span>
+                            <span class="value">
+                                {{ $voucher->reviewed_at
+                                    ? $voucher->reviewed_at->format('F j, Y')
+                                    : '-' }}
+                            </span>
+                        </div>
+
+                        <div class="voucher-row">
+                            <span class="label">Payment Method</span>
+                            <span class="value">
+                                {{ $voucher->payment_method ?? '-' }}
+                            </span>
+                        </div>
+
+                        <div class="amount-block">
+                            <div class="amount-label">
+                                AMOUNT PAYABLE
                             </div>
 
-                            <div class="voucher-row">
-                                <span class="label">
-                                    Linked Invoice
-                                </span>
-
-                                <span class="value">
-                                    {{ $invoice->invoice_code }}
-                                </span>
+                            <div class="amount-value">
+                                RM {{ number_format($voucher->amount, 2) }}
                             </div>
+                        </div>
 
-                            <div class="voucher-row">
-                                <span class="label">
-                                    Approved By
-                                </span>
+                        <textarea
+                            class="voucher-notes"
+                            readonly
+                        >{{ $voucher->notes ?? ($invoice->review_notes ?? '') }}</textarea>
 
-                                <span class="value">
-                                    {{ $voucher->reviewer?->fullname ?? ($voucher->reviewer?->username ?? 'Admin') }}
-                                </span>
-                            </div>
+                        <a href="{{ route('developer.payment-vouchers.pdf', $voucher) }}" class="btn-voucher-pdf" target="_blank">
+                            <svg viewBox="0 0 24 24">
+                                <path d="M5 20h14v-2H5v2ZM19 9h-4V3H9v6H5l7 7 7-7Z" />
+                            </svg>
 
-                            <div class="voucher-row">
-                                <span class="label">
-                                    Approved Date
-                                </span>
-
-                                <span class="value">
-                                    {{ $voucher->reviewed_at ? $voucher->reviewed_at->format('F j, Y') : '-' }}
-                                </span>
-                            </div>
-
-                            <div class="voucher-row">
-                                <span class="label">
-                                    Payment Method
-                                </span>
-
-                                <span class="value">
-                                    {{ $voucher->payment_method ?? '-' }}
-                                </span>
-                            </div>
-
-                            <div class="amount-block">
-
-                                <div class="amount-label">
-                                    AMOUNT PAYABLE
-                                </div>
-
-                                <div class="amount-value">
-                                    RM {{ number_format($voucher->amount, 2) }}
-                                </div>
-
-                            </div>
-
-                            <textarea class="voucher-notes" readonly>{{ $voucher->notes ?? ($invoice->review_notes ?? '') }}</textarea>
-
-                            <button class="btn-voucher-pdf" type="button">
-                                <svg viewBox="0 0 24 24">
-                                    <path d="M5 20h14v-2H5v2ZM19 9h-4V3H9v6H5l7 7 7-7Z" />
-                                </svg>
-
-                                Download Voucher PDF
-                            </button>
+                            Download Voucher PDF
+                        </a>
                         @elseif ($invoice->status === 'Rejected')
                             <div class="voucher-rejected">
 

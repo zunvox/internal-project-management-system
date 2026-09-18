@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Claim;
 use App\Models\ClaimCategory;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
@@ -291,5 +292,24 @@ class DeveloperClaimController extends Controller
         );
 
         return $code;
+    }
+
+    public function downloadPdf(Claim $claim)
+    {
+        abort_if($claim->user_id !== auth()->id(), 403);
+
+        $claim->load([
+            'user',
+            'category',
+        ]);
+
+        $pdf = Pdf::loadView(
+            'developer.claims.pdf',
+            compact('claim')
+        )->setPaper('a4', 'portrait');
+
+        return $pdf->stream(
+            'Claim-' . $claim->claim_code . '.pdf'
+        );
     }
 }

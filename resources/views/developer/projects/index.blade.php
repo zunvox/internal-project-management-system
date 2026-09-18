@@ -587,360 +587,363 @@
     @include('developer.partials.developer-topbar')
     @include('developer.partials.developer-nav')
 
-    <div class="page">
+    <div class="stage">
+        <div class="page">
 
-        <div class="page-header">
-            <h1 class="page-title">Project Index</h1>
-        </div>
+            <div class="page-header">
+                <h1 class="page-title">Project Index</h1>
+            </div>
 
-        <div class="search-field">
-            <svg viewBox="0 0 24 24">
-                <path
-                    d="M15.5 14h-.79l-.28-.27a6.47 6.47 0 0 0 1.57-4.23 6.5 6.5 0 1 0-6.5 6.5c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5Zm-6 0A4.5 4.5 0 1 1 14 9.5 4.5 4.5 0 0 1 9.5 14Z" />
-            </svg>
-            <input type="text" id="project-search" placeholder="Search...">
-        </div>
+            <div class="search-field">
+                <svg viewBox="0 0 24 24">
+                    <path
+                        d="M15.5 14h-.79l-.28-.27a6.47 6.47 0 0 0 1.57-4.23 6.5 6.5 0 1 0-6.5 6.5c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5Zm-6 0A4.5 4.5 0 1 1 14 9.5 4.5 4.5 0 0 1 9.5 14Z" />
+                </svg>
+                <input type="text" id="project-search" placeholder="Search...">
+            </div>
 
-        <div class="board">
+            <div class="board">
 
-            <!-- Ongoing -->
-            <div class="column">
+                <!-- Ongoing -->
+                <div class="column">
 
 
-                <div class="column-header">
-                    <span class="status-dot dot-ongoing"></span>
-                    <h2>Ongoing</h2>
-                </div>
+                    <div class="column-header">
+                        <span class="status-dot dot-ongoing"></span>
+                        <h2>Ongoing</h2>
+                    </div>
 
-                <div class="column-scroll">
+                    <div class="column-scroll">
 
-                    @forelse ($ongoingProjects as $project)
-                        <div class="project-card-link" data-project-id="{{ $project->id }}"
-                            data-search="{{ strtolower(
-                                $project->name .
-                                    ' ' .
-                                    ($project->description ?? '') .
-                                    ' ' .
-                                    $project->status .
-                                    ' ' .
-                                    ($project->creator?->fullname ?? ''),
-                            ) }}">
+                        @forelse ($ongoingProjects as $project)
+                            <div class="project-card-link" data-project-id="{{ $project->id }}"
+                                data-search="{{ strtolower(
+                                    $project->name .
+                                        ' ' .
+                                        ($project->description ?? '') .
+                                        ' ' .
+                                        $project->status .
+                                        ' ' .
+                                        ($project->creator?->fullname ?? ''),
+                                ) }}">
 
-                            <div class="project-card">
+                                <div class="project-card">
 
-                                <div class="project-card-header">
-                                    <div class="project-name">
-                                        {{ $project->name }}
-                                    </div>
-                                </div>
-
-                                <div class="project-card-body">
-
-                                    <div class="project-id">
-                                        PRJ-{{ str_pad($project->id, 4, '0', STR_PAD_LEFT) }}
+                                    <div class="project-card-header">
+                                        <div class="project-name">
+                                            {{ $project->name }}
+                                        </div>
                                     </div>
 
-                                    <div class="project-desc">
-                                        {{ $project->description ?? 'No project description.' }}
-                                    </div>
+                                    <div class="project-card-body">
 
-                                    <div class="project-meta">
-
-                                        <div class="meta-row">
-                                            <svg viewBox="0 0 24 24">
-                                                <path
-                                                    d="M12 12a5 5 0 1 0 0-10 5 5 0 0 0 0 10Zm0 2c-4.4 0-8 2.2-8 5v2h16v-2c0-2.8-3.6-5-8-5Z" />
-                                            </svg>
-
-                                            {{ $project->creator?->fullname ?? 'Unknown Admin' }}
+                                        <div class="project-id">
+                                            PRJ-{{ str_pad($project->id, 4, '0', STR_PAD_LEFT) }}
                                         </div>
 
-                                        <div class="meta-row">
-                                            <svg viewBox="0 0 24 24">
-                                                <path d="M14.4 6 14 4H5v17h2v-7h5.6l.4 2h7V6z" />
-                                            </svg>
-
-                                            {{ $project->end_date?->format('d F Y') }}
+                                        <div class="project-desc">
+                                            {{ $project->description ?? 'No project description.' }}
                                         </div>
 
-                                    </div>
+                                        <div class="project-meta">
 
-                                    <span class="status-pill pill-ongoing">Ongoing</span>
+                                            <div class="meta-row">
+                                                <svg viewBox="0 0 24 24">
+                                                    <path
+                                                        d="M12 12a5 5 0 1 0 0-10 5 5 0 0 0 0 10Zm0 2c-4.4 0-8 2.2-8 5v2h16v-2c0-2.8-3.6-5-8-5Z" />
+                                                </svg>
+
+                                                {{ $project->creator?->fullname ?? 'Unknown Admin' }}
+                                            </div>
+
+                                            <div class="meta-row">
+                                                <svg viewBox="0 0 24 24">
+                                                    <path d="M14.4 6 14 4H5v17h2v-7h5.6l.4 2h7V6z" />
+                                                </svg>
+
+                                                {{ $project->end_date?->format('d F Y') }}
+                                            </div>
+
+                                        </div>
+
+                                        <span class="status-pill pill-ongoing">Ongoing</span>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
 
-                    @empty
+                        @empty
 
-                        <div class="empty-projects">
-                            No ongoing projects.
-                        </div>
-                    @endforelse
+                            <div class="empty-projects">
+                                No ongoing projects.
+                            </div>
+                        @endforelse
 
-                    <div class="no-search-results" style="display:none;">No matching projects.</div>
+                        <div class="no-search-results" style="display:none;">No matching projects.</div>
+
+                    </div>
+
+                </div>
+
+                <!-- Completed -->
+                <div class="column">
+
+                    <div class="column-header">
+                        <span class="status-dot dot-completed"></span>
+                        <h2>Completed</h2>
+                    </div>
+
+                    <div class="column-scroll">
+
+                        @forelse ($completedProjects as $project)
+                            <div class="project-card-link" data-project-id="{{ $project->id }}"
+                                data-search="{{ strtolower(
+                                    $project->name .
+                                        ' ' .
+                                        ($project->description ?? '') .
+                                        ' ' .
+                                        $project->status .
+                                        ' ' .
+                                        ($project->creator?->fullname ?? ''),
+                                ) }}">
+
+                                <div class="project-card">
+
+                                    <div class="project-card-header">
+                                        <div class="project-name">
+                                            {{ $project->name }}
+                                        </div>
+                                    </div>
+
+                                    <div class="project-card-body">
+
+                                        <div class="project-id">
+                                            PRJ-{{ str_pad($project->id, 4, '0', STR_PAD_LEFT) }}
+                                        </div>
+
+                                        <div class="project-desc">
+                                            {{ $project->description ?? 'No project description.' }}
+                                        </div>
+
+                                        <div class="project-meta">
+
+                                            <div class="meta-row">
+                                                <svg viewBox="0 0 24 24">
+                                                    <path
+                                                        d="M12 12a5 5 0 1 0 0-10 5 5 0 0 0 0 10Zm0 2c-4.4 0-8 2.2-8 5v2h16v-2c0-2.8-3.6-5-8-5Z" />
+                                                </svg>
+
+                                                {{ $project->creator?->fullname ?? 'Unknown Admin' }}
+                                            </div>
+
+                                            <div class="meta-row">
+                                                <svg viewBox="0 0 24 24">
+                                                    <path d="M14.4 6 14 4H5v17h2v-7h5.6l.4 2h7V6z" />
+                                                </svg>
+
+                                                {{ $project->end_date?->format('d F Y') }}
+                                            </div>
+
+                                        </div>
+
+                                        <span class="status-pill pill-completed">
+                                            Completed
+                                        </span>
+
+                                    </div>
+
+                                </div>
+                            </div>
+
+                        @empty
+
+                            <div class="empty-projects">
+                                No completed projects.
+                            </div>
+                        @endforelse
+
+                        <div class="no-search-results" style="display:none;">No matching projects.</div>
+
+                    </div>
+
+                </div>
+
+                <!-- Blockage / On Hold -->
+                <div class="column">
+
+                    <div class="column-header">
+                        <span class="status-dot dot-on-hold"></span>
+                        <h2>On Hold</h2>
+                    </div>
+
+                    <div class="column-scroll">
+
+                        @forelse ($onHoldProjects as $project)
+                            <div class="project-card-link" data-project-id="{{ $project->id }}"
+                                data-search="{{ strtolower(
+                                    $project->name .
+                                        ' ' .
+                                        ($project->description ?? '') .
+                                        ' ' .
+                                        $project->status .
+                                        ' ' .
+                                        ($project->creator?->fullname ?? ''),
+                                ) }}">
+
+                                <div class="project-card">
+
+                                    <div class="project-card-header">
+                                        <div class="project-name">
+                                            {{ $project->name }}
+                                        </div>
+                                    </div>
+
+                                    <div class="project-card-body">
+
+                                        <div class="project-id">
+                                            PRJ-{{ str_pad($project->id, 4, '0', STR_PAD_LEFT) }}
+                                        </div>
+
+                                        <div class="project-desc">
+                                            {{ $project->description ?? 'No project description.' }}
+                                        </div>
+
+                                        <div class="project-meta">
+
+                                            <div class="meta-row">
+                                                <svg viewBox="0 0 24 24">
+                                                    <path
+                                                        d="M12 12a5 5 0 1 0 0-10 5 5 0 0 0 0 10Zm0 2c-4.4 0-8 2.2-8 5v2h16v-2c0-2.8-3.6-5-8-5Z" />
+                                                </svg>
+
+                                                {{ $project->creator?->fullname ?? 'Unknown Admin' }}
+                                            </div>
+
+                                            <div class="meta-row">
+                                                <svg viewBox="0 0 24 24">
+                                                    <path d="M14.4 6 14 4H5v17h2v-7h5.6l.4 2h7V6z" />
+                                                </svg>
+
+                                                {{ $project->end_date?->format('d F Y') }}
+                                            </div>
+
+                                        </div>
+
+                                        <span class="status-pill pill-on-hold">
+                                            On Hold
+                                        </span>
+
+                                    </div>
+
+                                </div>
+                            </div>
+
+                        @empty
+
+                            <div class="empty-projects">
+                                No projects on hold.
+                            </div>
+                        @endforelse
+
+                        <div class="no-search-results" style="display:none;">No matching projects.</div>
+
+                    </div>
 
                 </div>
 
             </div>
 
-            <!-- Completed -->
-            <div class="column">
+            <div class="project-modal-overlay" id="project-modal">
 
-                <div class="column-header">
-                    <span class="status-dot dot-completed"></span>
-                    <h2>Completed</h2>
-                </div>
+                <div class="project-modal">
 
-                <div class="column-scroll">
+                    <button type="button" class="project-modal-close" id="project-modal-close">
+                        X
+                    </button>
 
-                    @forelse ($completedProjects as $project)
-                        <div class="project-card-link" data-project-id="{{ $project->id }}"
-                            data-search="{{ strtolower(
-                                $project->name .
-                                    ' ' .
-                                    ($project->description ?? '') .
-                                    ' ' .
-                                    $project->status .
-                                    ' ' .
-                                    ($project->creator?->fullname ?? ''),
-                            ) }}">
+                    <div class="project-modal-header">
 
-                            <div class="project-card">
+                        <h2 id="modal-project-name">
+                            Project Name
+                        </h2>
 
-                                <div class="project-card-header">
-                                    <div class="project-name">
-                                        {{ $project->name }}
-                                    </div>
-                                </div>
+                        <span class="status-pill" id="modal-project-status">
+                            Status
+                        </span>
 
-                                <div class="project-card-body">
+                    </div>
 
-                                    <div class="project-id">
-                                        PRJ-{{ str_pad($project->id, 4, '0', STR_PAD_LEFT) }}
-                                    </div>
+                    <div class="project-modal-content">
 
-                                    <div class="project-desc">
-                                        {{ $project->description ?? 'No project description.' }}
+                        <div class="project-modal-details">
+
+                            <div class="detail-grid">
+
+                                <div class="detail-left">
+
+                                    <div class="detail-item">
+                                        <span class="detail-label">
+                                            Project ID
+                                        </span>
+
+                                        <strong id="modal-project-id"></strong>
                                     </div>
 
-                                    <div class="project-meta">
+                                    <div class="detail-item">
+                                        <span class="detail-label">
+                                            Created By
+                                        </span>
 
-                                        <div class="meta-row">
-                                            <svg viewBox="0 0 24 24">
-                                                <path
-                                                    d="M12 12a5 5 0 1 0 0-10 5 5 0 0 0 0 10Zm0 2c-4.4 0-8 2.2-8 5v2h16v-2c0-2.8-3.6-5-8-5Z" />
-                                            </svg>
-
-                                            {{ $project->creator?->fullname ?? 'Unknown Admin' }}
-                                        </div>
-
-                                        <div class="meta-row">
-                                            <svg viewBox="0 0 24 24">
-                                                <path d="M14.4 6 14 4H5v17h2v-7h5.6l.4 2h7V6z" />
-                                            </svg>
-
-                                            {{ $project->end_date?->format('d F Y') }}
-                                        </div>
-
+                                        <strong id="modal-project-creator"></strong>
                                     </div>
 
-                                    <span class="status-pill pill-completed">
-                                        Completed
-                                    </span>
+                                    <div class="detail-item">
+                                        <span class="detail-label">
+                                            Duration
+                                        </span>
+
+                                        <strong id="modal-project-duration"></strong>
+                                    </div>
 
                                 </div>
 
-                            </div>
-                        </div>
-
-                    @empty
-
-                        <div class="empty-projects">
-                            No completed projects.
-                        </div>
-                    @endforelse
-
-                    <div class="no-search-results" style="display:none;">No matching projects.</div>
-
-                </div>
-
-            </div>
-
-            <!-- Blockage / On Hold -->
-            <div class="column">
-
-                <div class="column-header">
-                    <span class="status-dot dot-on-hold"></span>
-                    <h2>On Hold</h2>
-                </div>
-
-                <div class="column-scroll">
-
-                    @forelse ($onHoldProjects as $project)
-                        <div class="project-card-link" data-project-id="{{ $project->id }}"
-                            data-search="{{ strtolower(
-                                $project->name .
-                                    ' ' .
-                                    ($project->description ?? '') .
-                                    ' ' .
-                                    $project->status .
-                                    ' ' .
-                                    ($project->creator?->fullname ?? ''),
-                            ) }}">
-
-                            <div class="project-card">
-
-                                <div class="project-card-header">
-                                    <div class="project-name">
-                                        {{ $project->name }}
-                                    </div>
-                                </div>
-
-                                <div class="project-card-body">
-
-                                    <div class="project-id">
-                                        PRJ-{{ str_pad($project->id, 4, '0', STR_PAD_LEFT) }}
-                                    </div>
-
-                                    <div class="project-desc">
-                                        {{ $project->description ?? 'No project description.' }}
-                                    </div>
-
-                                    <div class="project-meta">
-
-                                        <div class="meta-row">
-                                            <svg viewBox="0 0 24 24">
-                                                <path
-                                                    d="M12 12a5 5 0 1 0 0-10 5 5 0 0 0 0 10Zm0 2c-4.4 0-8 2.2-8 5v2h16v-2c0-2.8-3.6-5-8-5Z" />
-                                            </svg>
-
-                                            {{ $project->creator?->fullname ?? 'Unknown Admin' }}
-                                        </div>
-
-                                        <div class="meta-row">
-                                            <svg viewBox="0 0 24 24">
-                                                <path d="M14.4 6 14 4H5v17h2v-7h5.6l.4 2h7V6z" />
-                                            </svg>
-
-                                            {{ $project->end_date?->format('d F Y') }}
-                                        </div>
-
-                                    </div>
-
-                                    <span class="status-pill pill-on-hold">
-                                        On Hold
-                                    </span>
-
-                                </div>
-
-                            </div>
-                        </div>
-
-                    @empty
-
-                        <div class="empty-projects">
-                            No projects on hold.
-                        </div>
-                    @endforelse
-
-                    <div class="no-search-results" style="display:none;">No matching projects.</div>
-
-                </div>
-
-            </div>
-
-        </div>
-
-        <div class="project-modal-overlay" id="project-modal">
-
-            <div class="project-modal">
-
-                <button type="button" class="project-modal-close" id="project-modal-close">
-                    X
-                </button>
-
-                <div class="project-modal-header">
-
-                    <h2 id="modal-project-name">
-                        Project Name
-                    </h2>
-
-                    <span class="status-pill" id="modal-project-status">
-                        Status
-                    </span>
-
-                </div>
-
-                <div class="project-modal-content">
-
-                    <div class="project-modal-details">
-
-                        <div class="detail-grid">
-
-                            <div class="detail-left">
-
-                                <div class="detail-item">
+                                <div class="detail-item assigned-developers">
                                     <span class="detail-label">
-                                        Project ID
+                                        Assigned Developers
                                     </span>
 
-                                    <strong id="modal-project-id"></strong>
-                                </div>
-
-                                <div class="detail-item">
-                                    <span class="detail-label">
-                                        Created By
-                                    </span>
-
-                                    <strong id="modal-project-creator"></strong>
-                                </div>
-
-                                <div class="detail-item">
-                                    <span class="detail-label">
-                                        Duration
-                                    </span>
-
-                                    <strong id="modal-project-duration"></strong>
+                                    <div class="developer-avatars" id="modal-project-developers"></div>
                                 </div>
 
                             </div>
 
-                            <div class="detail-item assigned-developers">
+                            <div class="detail-description">
+
                                 <span class="detail-label">
-                                    Assigned Developers
+                                    Description
                                 </span>
 
-                                <div class="developer-avatars" id="modal-project-developers"></div>
+                                <strong id="modal-project-description"></strong>
+
                             </div>
 
                         </div>
 
-                        <div class="detail-description">
+                        <div class="milestone-panel">
 
-                            <span class="detail-label">
-                                Description
-                            </span>
+                            <div class="milestone-title">
+                                Milestones
+                            </div>
 
-                            <strong id="modal-project-description"></strong>
+                            <div class="milestone-list" id="modal-project-milestones"></div>
+
+                            <form method="POST" id="milestone-form" class="milestone-comment-form">
+                                @csrf
+
+                                <textarea name="description" id="milestone-description" placeholder="Write a project update... Press Enter to post"
+                                    required></textarea>
+                            </form>
 
                         </div>
-
-                    </div>
-
-                    <div class="milestone-panel">
-
-                        <div class="milestone-title">
-                            Milestones
-                        </div>
-
-                        <div class="milestone-list" id="modal-project-milestones"></div>
-
-                        <form method="POST" id="milestone-form" class="milestone-comment-form">
-                            @csrf
-
-                            <textarea name="description" id="milestone-description" placeholder="Write a project update... Press Enter to post"
-                                required></textarea>
-                        </form>
 
                     </div>
 
@@ -949,19 +952,25 @@
             </div>
 
         </div>
+    </div>
 
-    </div>
-    </div>
+    @php
+        $milestoneStoreUrlTemplate = route('developer.projects.milestones.store', [
+            'project' => '__PROJECT__',
+        ]);
+
+        $milestoneDeleteUrlTemplate = route('developer.projects.milestones.destroy', [
+            'project' => '__PROJECT__',
+            'milestone' => '__MILESTONE__',
+        ]);
+    @endphp
 
     <script>
         const currentUserId = {{ auth()->id() }};
 
-        const milestoneStoreUrl = @json(route('developer.projects.milestones.store', ['project' => '__PROJECT__']));
+        const milestoneStoreUrl = @json($milestoneStoreUrlTemplate);
 
-        const milestoneDeleteUrl = @json(route('developer.projects.milestones.destroy', [
-                'project' => '__PROJECT__',
-                'milestone' => '__MILESTONE__',
-            ]));
+        const milestoneDeleteUrl = @json($milestoneDeleteUrlTemplate);
 
         const projectData = {{ Illuminate\Support\Js::from($projectData) }};
 

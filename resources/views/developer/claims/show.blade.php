@@ -116,6 +116,15 @@
             font-size: 12px;
             font-weight: 600;
             white-space: nowrap;
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+        }
+
+        .btn-download-page svg {
+            width: 14px;
+            height: 14px;
+            fill: white;
         }
 
         .btn-download-page:hover {
@@ -478,7 +487,13 @@
 
                 </div>
 
-                <a href="#" class="btn-download-page">↓ Download PDF</a>
+                <a href="{{ route('developer.claims.pdf', $claim) }}" class="btn-download-page" target="_blank">
+                    <svg viewBox="0 0 24 24">
+                        <path d="M5 20h14v-2H5v2ZM19 9h-4V3H9v6H5l7 7 7-7Z" />
+                    </svg>
+
+                    Download PDF
+                </a>
 
             </div>
 
@@ -616,6 +631,7 @@
                         <div class="voucher-body">
 
                             @if ($claim->status === 'Submitted')
+
                                 <div class="voucher-state">
 
                                     <div class="pending-dots">
@@ -628,12 +644,91 @@
                                         Approval pending...
                                     </div>
 
-                                    <button type="button" class="btn-unavailable" disabled>
+                                    <button class="btn-unavailable" type="button" disabled>
                                         Download Unavailable
                                     </button>
 
                                 </div>
+                            @elseif ($claim->status === 'Approved' && !$claim->paymentVoucher)
+                                <div class="voucher-state">
+
+                                    <div class="pending-dots">
+                                        <span></span>
+                                        <span></span>
+                                        <span></span>
+                                    </div>
+
+                                    <div class="state-title">
+                                        Claim approved.
+                                    </div>
+
+                                    <div style="font-size: 10px; color: #98A2B3; margin-bottom: 16px;">
+                                        Waiting for payment voucher generation.
+                                    </div>
+
+                                    <button class="btn-unavailable" type="button" disabled>
+                                        Download Unavailable
+                                    </button>
+
+                                </div>
+                            @elseif ($claim->status === 'Approved' && $claim->paymentVoucher)
+                                @php
+                                    $voucher = $claim->paymentVoucher;
+                                @endphp
+
+                                <div class="voucher-details">
+
+                                    <div class="voucher-row">
+                                        <span>Voucher Number</span>
+                                        <strong>{{ $voucher->voucher_code }}</strong>
+                                    </div>
+
+                                    <div class="voucher-row">
+                                        <span>Linked Claim</span>
+                                        <strong>{{ $claim->claim_code }}</strong>
+                                    </div>
+
+                                    <div class="voucher-row">
+                                        <span>Approved By</span>
+                                        <strong>
+                                            {{ $voucher->reviewer?->fullname ?? ($voucher->reviewer?->username ?? 'Admin') }}
+                                        </strong>
+                                    </div>
+
+                                    <div class="voucher-row">
+                                        <span>Payment Method</span>
+                                        <strong>
+                                            {{ $voucher->payment_method ?? '-' }}
+                                        </strong>
+                                    </div>
+
+                                    <div class="voucher-row">
+                                        <span>Amount Payable</span>
+                                        <strong>
+                                            RM {{ number_format($voucher->amount, 2) }}
+                                        </strong>
+                                    </div>
+
+                                    @if ($voucher->notes || $claim->review_notes)
+                                        <div style="margin-top: 12px;">
+                                            <div style="font-size: 9px; color: #667085; margin-bottom: 5px;">
+                                                Admin Notes
+                                            </div>
+
+                                            <div style="font-size: 10px; color: #101828;">
+                                                {{ $voucher->notes ?? $claim->review_notes }}
+                                            </div>
+                                        </div>
+                                    @endif
+
+                                    <a href="{{ route('developer.payment-vouchers.pdf', $voucher) }}"
+                                        class="btn-download-voucher" target="_blank">
+                                        Download Voucher PDF
+                                    </a>
+
+                                </div>
                             @elseif ($claim->status === 'Rejected')
+
                                 <div class="voucher-state">
 
                                     <div class="rejected-icon">
@@ -644,112 +739,58 @@
                                         Claim Rejected
                                     </div>
 
-
-                                    <div style="width:100%;">
-
-                                        <div class="voucher-row">
-                                            <span>
-                                                Reviewed By
-                                            </span>
-
-                                            <strong>
-                                                {{ $claim->reviewer?->fullname ?? ($claim->reviewer?->username ?? '-') }}
-                                            </strong>
-                                        </div>
-
-                                        <div class="voucher-row">
-                                            <span>
-                                                Review Date
-                                            </span>
-
-                                            <strong>
-                                                {{ $claim->reviewed_at?->format('d F Y') ?? '-' }}
-                                            </strong>
-                                        </div>
-
+                                    <div style="
+                                        font-size: 10px;
+                                        color: #667085;
+                                        text-align: center;
+                                        margin-bottom: 14px;
+                                    ">
+                                        This claim was rejected by the admin.
                                     </div>
 
+                                    @if ($claim->review_notes)
 
-                                    <button type="button" class="btn-unavailable" disabled>
+                                        <div style="
+                                            width: 88%;
+                                            background: #FEF3F2;
+                                            border: 1px solid #FDA29B;
+                                            border-radius: 6px;
+                                            padding: 10px;
+                                            margin-bottom: 14px;
+                                            box-sizing: border-box;
+                                        ">
+
+                                            <div style="
+                                                font-size: 9px;
+                                                font-weight: 700;
+                                                color: #B42318;
+                                                margin-bottom: 5px;
+                                            ">
+                                                Admin Notes
+                                            </div>
+
+                                            <div style="
+                                                font-size: 10px;
+                                                color: #344054;
+                                                line-height: 1.4;
+                                            ">
+                                                {{ $claim->review_notes }}
+                                            </div>
+
+                                        </div>
+
+                                    @endif
+
+                                    <button
+                                        class="btn-unavailable"
+                                        type="button"
+                                        disabled
+                                    >
                                         Download Unavailable
                                     </button>
 
                                 </div>
-                            @elseif ($claim->status === 'Approved' && $claim->paymentVoucher)
-                                <div class="voucher-details">
 
-                                    <div class="voucher-row">
-                                        <span>
-                                            Voucher Number
-                                        </span>
-
-                                        <strong>
-                                            {{ $claim->paymentVoucher->voucher_code ?? '-' }}
-                                        </strong>
-                                    </div>
-
-
-                                    <div class="voucher-row">
-                                        <span>
-                                            Linked Claim
-                                        </span>
-
-                                        <strong>
-                                            {{ $claim->claim_code }}
-                                        </strong>
-                                    </div>
-
-
-                                    <div class="voucher-row">
-                                        <span>
-                                            Approved By
-                                        </span>
-
-                                        <strong>
-                                            {{ $claim->reviewer?->fullname ?? ($claim->reviewer?->username ?? '-') }}
-                                        </strong>
-                                    </div>
-
-
-                                    <div class="voucher-row">
-                                        <span>
-                                            Approved Date
-                                        </span>
-
-                                        <strong>
-                                            {{ $claim->reviewed_at?->format('d F Y') ?? '-' }}
-                                        </strong>
-                                    </div>
-
-
-                                    <div class="voucher-row">
-                                        <span>
-                                            Payment Method
-                                        </span>
-
-                                        <strong>
-                                            {{ $claim->paymentVoucher->payment_method ?? '-' }}
-                                        </strong>
-                                    </div>
-
-
-                                    <a href="#" class="btn-download-voucher">
-                                        ↓ Download Voucher PDF
-                                    </a>
-
-                                </div>
-                            @else
-                                <div class="voucher-state">
-
-                                    <div class="state-title">
-                                        Voucher unavailable
-                                    </div>
-
-                                    <button type="button" class="btn-unavailable" disabled>
-                                        Download Unavailable
-                                    </button>
-
-                                </div>
                             @endif
 
                         </div>

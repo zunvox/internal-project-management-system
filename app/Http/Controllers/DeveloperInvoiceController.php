@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Invoice;
 use App\Models\InvoiceItem;
 use App\Models\Project;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
@@ -138,20 +139,20 @@ class DeveloperInvoiceController extends Controller
             'items.*.unit_price' => [
                 'required',
                 'numeric',
-                'min:0',
+                'gt:0',
             ],
 
             'tax_percentage' => [
                 'required',
                 'numeric',
-                'min:0',
+                'min:1',
                 'max:100',
             ],
 
             'discount_amount' => [
                 'nullable',
                 'numeric',
-                'min:0',
+                'gt:0',
             ],
         ]);
 
@@ -554,5 +555,25 @@ class DeveloperInvoiceController extends Controller
         );
 
         return $code;
+    }
+
+    public function downloadPdf(Invoice $invoice)
+    {
+        abort_if($invoice->user_id !== auth()->id(), 403);
+
+        $invoice->load([
+            'user',
+            'project',
+            'items',
+        ]);
+
+        $pdf = Pdf::loadView(
+            'developer.invoices.pdf',
+            compact('invoice')
+        )->setPaper('a4', 'portrait');
+
+        return $pdf->stream(
+            'Invoice-' . $invoice->invoice_code . '.pdf'
+        );
     }
 }

@@ -8,6 +8,7 @@ use App\Models\Claim;
 use App\Models\Invoice;
 use App\Models\PaymentVoucher;
 use App\Models\CashFlowCategory;
+use App\Models\CashFlowChangeLog;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
@@ -195,7 +196,7 @@ class PaymentVoucherController extends Controller
             ]);
 
 
-            CashFlow::create([
+            $cashFlow = CashFlow::create([
                 'logged_by' =>
                     auth()->id(),
 
@@ -209,7 +210,9 @@ class PaymentVoucherController extends Controller
                     'Cash Out',
 
                 'subject' =>
-                     $claim->claim_code . ' - ' . $claim->title,
+                    $claim->claim_code
+                    . ' - '
+                    . $claim->claim_subject,
 
                 'transaction_date' =>
                     now()->toDateString(),
@@ -223,6 +226,53 @@ class PaymentVoucherController extends Controller
                 'description' =>
                     'Approved staff claim '
                     . $claim->claim_code,
+            ]);
+
+            CashFlowChangeLog::create([
+                'cash_flow_id' =>
+                    $cashFlow->id,
+
+                'changed_by' =>
+                    auth()->id(),
+
+                'action' =>
+                    'Created',
+
+                'description' =>
+                    'Cash flow transaction automatically created from approved claim '
+                    . $claim->claim_code
+                    . '.',
+
+                'snapshot' => [
+                    'transaction_code' =>
+                        $cashFlow->transaction_code,
+
+                    'subject' =>
+                        $cashFlow->subject,
+
+                    'type' =>
+                        $cashFlow->type,
+
+                    'category' =>
+                        $claimCategory->category_name,
+
+                    'other_category' =>
+                        $cashFlow->other_category,
+
+                    'transaction_date' =>
+                        $cashFlow->transaction_date?->format('Y-m-d'),
+
+                    'amount' =>
+                        $cashFlow->amount,
+
+                    'description' =>
+                        $cashFlow->description,
+
+                    'logged_by' =>
+                        auth()->user()->username
+                        ?? auth()->user()->fullname
+                        ?? 'Admin',
+                ],
             ]);
         });
 
@@ -332,7 +382,7 @@ class PaymentVoucherController extends Controller
             ]);
 
 
-            CashFlow::create([
+            $cashFlow = CashFlow::create([
                 'logged_by' =>
                     auth()->id(),
 
@@ -346,7 +396,9 @@ class PaymentVoucherController extends Controller
                     'Cash Out',
 
                 'subject' =>
-                    $invoice->invoice_code . ' - ' . $invoice->subject,
+                    $invoice->invoice_code
+                    . ' - '
+                    . $invoice->subject,
 
                 'transaction_date' =>
                     now()->toDateString(),
@@ -358,8 +410,54 @@ class PaymentVoucherController extends Controller
                     $invoice->grand_total,
 
                 'description' =>
-                    'Approved invoice '
-                    . $invoice->invoice_code,
+                    $invoice->description,
+            ]);
+
+            CashFlowChangeLog::create([
+                'cash_flow_id' =>
+                    $cashFlow->id,
+
+                'changed_by' =>
+                    auth()->id(),
+
+                'action' =>
+                    'Created',
+
+                'description' =>
+                    'Cash flow transaction automatically created from approved invoice '
+                    . $invoice->invoice_code
+                    . '.',
+
+                'snapshot' => [
+                    'transaction_code' =>
+                        $cashFlow->transaction_code,
+
+                    'subject' =>
+                        $cashFlow->subject,
+
+                    'type' =>
+                        $cashFlow->type,
+
+                    'category' =>
+                        $invoiceCategory->category_name,
+
+                    'other_category' =>
+                        $cashFlow->other_category,
+
+                    'transaction_date' =>
+                        $cashFlow->transaction_date?->format('Y-m-d'),
+
+                    'amount' =>
+                        $cashFlow->amount,
+
+                    'description' =>
+                        $cashFlow->description,
+
+                    'logged_by' =>
+                        auth()->user()->username
+                        ?? auth()->user()->fullname
+                        ?? 'Admin',
+                ],
             ]);
         });
 

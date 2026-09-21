@@ -5,6 +5,8 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\CashFlow;
 use App\Models\CashFlowCategory;
+use App\Models\CashFlowChangeLog;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -171,6 +173,56 @@ class CashFlowController extends Controller
             'description' => $validated['description'] ?? null,
         ]);
 
+        $cashFlow->load([
+            'category',
+            'loggedBy',
+        ]);
+
+        CashFlowChangeLog::create([
+            'cash_flow_id' =>
+                $cashFlow->id,
+
+            'changed_by' =>
+                auth()->id(),
+
+            'action' =>
+                'Created',
+
+            'description' =>
+                'Cash flow transaction created.',
+
+            'snapshot' => [
+                'transaction_code' =>
+                    $cashFlow->transaction_code,
+
+                'subject' =>
+                    $cashFlow->subject,
+
+                'type' =>
+                    $cashFlow->type,
+
+                'category' =>
+                    $cashFlow->category?->category_name,
+
+                'other_category' =>
+                    $cashFlow->other_category,
+
+                'transaction_date' =>
+                    $cashFlow->transaction_date?->format('Y-m-d'),
+
+                'amount' =>
+                    $cashFlow->amount,
+
+                'description' =>
+                    $cashFlow->description,
+
+                'logged_by' =>
+                    $cashFlow->loggedBy?->username
+                    ?? $cashFlow->loggedBy?->fullname
+                    ?? 'Admin',
+            ],
+        ]);
+
         return redirect()
             ->route('admin.cash-flows.index')
             ->with(
@@ -184,9 +236,17 @@ class CashFlowController extends Controller
         $cashFlow->load([
             'loggedBy',
             'category',
+
+            'changeLogs' => function ($query) 
+            {
+                $query
+                    ->with('changedBy')
+                    ->latest();
+            },
         ]);
 
-        return view('admin.cash-flows.show', compact('cashFlow'));
+        return view('admin.cash-flows.show', compact('cashFlow')
+        );
     }
 
     public function edit(CashFlow $cashFlow): View
@@ -280,6 +340,56 @@ class CashFlowController extends Controller
             'amount' => $validated['amount'],
 
             'description' => $validated['description'] ?? null,
+        ]);
+
+        $cashFlow->load([
+            'category',
+            'loggedBy',
+        ]);
+
+        CashFlowChangeLog::create([
+            'cash_flow_id' =>
+                $cashFlow->id,
+
+            'changed_by' =>
+                auth()->id(),
+
+            'action' =>
+                'Updated',
+
+            'description' =>
+                'Cash flow transaction updated.',
+
+            'snapshot' => [
+                'transaction_code' =>
+                    $cashFlow->transaction_code,
+
+                'subject' =>
+                    $cashFlow->subject,
+
+                'type' =>
+                    $cashFlow->type,
+
+                'category' =>
+                    $cashFlow->category?->category_name,
+
+                'other_category' =>
+                    $cashFlow->other_category,
+
+                'transaction_date' =>
+                    $cashFlow->transaction_date?->format('Y-m-d'),
+
+                'amount' =>
+                    $cashFlow->amount,
+
+                'description' =>
+                    $cashFlow->description,
+
+                'logged_by' =>
+                    $cashFlow->loggedBy?->username
+                    ?? $cashFlow->loggedBy?->fullname
+                    ?? 'Admin',
+            ],
         ]);
 
         return redirect()
@@ -563,4 +673,506 @@ class CashFlowController extends Controller
             )
         );
     }
+
+        private function resolveReportRange(Request $request): array
+        {
+            $period = $request->query(
+                'period',
+                'weekly'
+            );
+
+            switch ($period) {
+
+                case 'weekly':
+
+                    if ($request->filled('week')) {
+
+                        [$year, $week] =
+                            explode(
+                                '-W',
+                                $request->week
+                            );
+
+                        $from = Carbon::now()
+                            ->setISODate(
+                                (int) $year,
+                                (int) $week
+                            )
+                            ->startOfWeek()
+                            ->startOfDay();
+
+                        $to = $from
+                            ->copy()
+                            ->endOfWeek()
+                            ->endOfDay();
+
+                    } else {
+
+                        $from = Carbon::now()
+                            ->startOfWeek()
+                            ->startOfDay();
+
+                        $to = Carbon::now()
+                            ->endOfWeek()
+                            ->endOfDay();
+                    }
+
+                    break;
+
+
+                case 'monthly':
+
+                    if ($request->filled('month')) {
+
+                        $selectedMonth =
+                            Carbon::createFromFormat(
+                                'Y-m',
+                                $request->month
+                            );
+
+                        $from = $selectedMonth
+                            ->copy()
+                            ->startOfMonth()
+                            ->startOfDay();
+
+                        $to = $selectedMonth
+                            ->copy()
+                            ->endOfMonth()
+                            ->endOfDay();
+
+                    } else {
+
+                        $from = Carbon::now()
+                            ->startOfMonth()
+                            ->startOfDay();
+
+                        $to = Carbon::now()
+                            ->endOfMonth()
+                            ->endOfDay();
+                    }
+
+                    break;
+
+
+                case 'yearly':
+
+                    $selectedYear =
+                        (int) $request->query(
+                            'year',
+                            now()->year
+                        );
+
+                    $from = Carbon::create(
+                        $selectedYear,
+                        1,
+                        1
+                    )->startOfDay();
+
+                    $to = Carbon::create(
+                        $selectedYear,
+                        12,
+                        31
+                    )->endOfDay();
+
+                    break;
+
+
+                case 'custom':
+
+                    $from = $request->filled('from')
+                        ? Carbon::parse(
+                            $request->from
+                        )->startOfDay()
+                        : Carbon::now()
+                            ->startOfMonth();
+
+                    $to = $request->filled('to')
+                        ? Carbon::parse(
+                            $request->to
+                        )->endOfDay()
+                        : Carbon::now()
+                            ->endOfMonth();
+
+                    break;
+
+
+                default:
+
+                    $period = 'weekly';
+
+                    $from = Carbon::now()
+                        ->startOfWeek()
+                        ->startOfDay();
+
+                    $to = Carbon::now()
+                        ->endOfWeek()
+                        ->endOfDay();
+            }
+
+            return [
+                $period,
+                $from,
+                $to,
+            ];
+        }
+
+        public function downloadReportPdf(Request $request)
+        {
+            [
+                $period,
+                $from,
+                $to,
+            ] = $this->resolveReportRange($request);
+
+
+            $previousTransactions =
+                CashFlow::where(
+                    'transaction_date',
+                    '<',
+                    $from->toDateString()
+                )->get();
+
+
+            $openingCashIn =
+                $previousTransactions
+                    ->where('type', 'Cash In')
+                    ->sum('amount');
+
+            $openingCashOut =
+                $previousTransactions
+                    ->where('type', 'Cash Out')
+                    ->sum('amount');
+
+            $openingBalance =
+                $openingCashIn
+                - $openingCashOut;
+
+
+            $cashFlows = CashFlow::with([
+                'category',
+                'loggedBy',
+            ])
+                ->whereBetween(
+                    'transaction_date',
+                    [
+                        $from->toDateString(),
+                        $to->toDateString(),
+                    ]
+                )
+                ->orderBy('transaction_date')
+                ->orderBy('id')
+                ->get();
+
+
+            $totalCashIn =
+                $cashFlows
+                    ->where('type', 'Cash In')
+                    ->sum('amount');
+
+            $totalCashOut =
+                $cashFlows
+                    ->where('type', 'Cash Out')
+                    ->sum('amount');
+
+            $netCashFlow =
+                $totalCashIn
+                - $totalCashOut;
+
+
+            $runningBalance =
+                $openingBalance;
+
+            $reportRows =
+                $cashFlows->map(
+                    function ($cashFlow) use (
+                        &$runningBalance
+                    ) {
+
+                        if (
+                            $cashFlow->type === 'Cash In'
+                        ) {
+                            $runningBalance +=
+                                $cashFlow->amount;
+                        } else {
+                            $runningBalance -=
+                                $cashFlow->amount;
+                        }
+
+                        return [
+                            'cashFlow' =>
+                                $cashFlow,
+
+                            'balance' =>
+                                $runningBalance,
+                        ];
+                    }
+                );
+
+
+            $closingBalance =
+                $runningBalance;
+
+
+            $pdf = Pdf::loadView(
+                'admin.cash-flows.report-pdf',
+                compact(
+                    'period',
+                    'from',
+                    'to',
+                    'reportRows',
+                    'openingBalance',
+                    'totalCashIn',
+                    'totalCashOut',
+                    'netCashFlow',
+                    'closingBalance'
+                )
+            )->setPaper(
+                'a4',
+                'landscape'
+            );
+
+
+            return $pdf->stream(
+                'Cash-Flow-Report-'
+                . $from->format('Y-m-d')
+                . '-to-'
+                . $to->format('Y-m-d')
+                . '.pdf'
+            );
+        }
+
+        public function downloadReportCsv(Request $request)
+        {
+            [
+                $period,
+                $from,
+                $to,
+            ] = $this->resolveReportRange($request);
+
+
+            $previousTransactions =
+                CashFlow::where(
+                    'transaction_date',
+                    '<',
+                    $from->toDateString()
+                )->get();
+
+
+            $openingCashIn =
+                $previousTransactions
+                    ->where('type', 'Cash In')
+                    ->sum('amount');
+
+            $openingCashOut =
+                $previousTransactions
+                    ->where('type', 'Cash Out')
+                    ->sum('amount');
+
+            $runningBalance =
+                $openingCashIn
+                - $openingCashOut;
+
+
+            $cashFlows = CashFlow::with([
+                'category',
+            ])
+                ->whereBetween(
+                    'transaction_date',
+                    [
+                        $from->toDateString(),
+                        $to->toDateString(),
+                    ]
+                )
+                ->orderBy('transaction_date')
+                ->orderBy('id')
+                ->get();
+
+
+            $fileName =
+                'Cash-Flow-Report-'
+                . $from->format('Y-m-d')
+                . '-to-'
+                . $to->format('Y-m-d')
+                . '.csv';
+
+
+            return response()->streamDownload(
+                function () use (
+                    $cashFlows,
+                    &$runningBalance,
+                    $from,
+                    $to
+                ) {
+
+                    $file =
+                        fopen(
+                            'php://output',
+                            'w'
+                        );
+
+
+                    /* UTF-8 BOM for Excel */
+                    fwrite(
+                        $file,
+                        "\xEF\xBB\xBF"
+                    );
+
+
+                    fputcsv(
+                        $file,
+                        [
+                            'Cash Flow Report',
+                        ]
+                    );
+
+                    fputcsv(
+                        $file,
+                        [
+                            'Period',
+                            $from->format('j F Y')
+                            . ' - '
+                            . $to->format('j F Y'),
+                        ]
+                    );
+
+                    fputcsv(
+                        $file,
+                        []
+                    );
+
+
+                    fputcsv(
+                        $file,
+                        [
+                            'Transaction ID',
+                            'Subject',
+                            'Category',
+                            'Date',
+                            'Cash In',
+                            'Cash Out',
+                            'Balance',
+                        ]
+                    );
+
+
+                    fputcsv(
+                        $file,
+                        [
+                            '',
+                            'Opening Balance',
+                            '',
+                            $from->format('d/m/Y'),
+                            '',
+                            '',
+                            number_format(
+                                $runningBalance,
+                                2,
+                                '.',
+                                ''
+                            ),
+                        ]
+                    );
+
+
+                    foreach (
+                        $cashFlows as $cashFlow
+                    ) {
+
+                        if (
+                            $cashFlow->type
+                            === 'Cash In'
+                        ) {
+
+                            $cashIn =
+                                $cashFlow->amount;
+
+                            $cashOut =
+                                '';
+
+                            $runningBalance +=
+                                $cashFlow->amount;
+
+                        } else {
+
+                            $cashIn =
+                                '';
+
+                            $cashOut =
+                                $cashFlow->amount;
+
+                            $runningBalance -=
+                                $cashFlow->amount;
+                        }
+
+
+                        $category =
+                            $cashFlow
+                                ->category
+                                ?->category_name
+                            ?? '-';
+
+
+                        if (
+                            $cashFlow->other_category
+                        ) {
+                            $category .=
+                                ' - '
+                                . $cashFlow
+                                    ->other_category;
+                        }
+
+
+                        fputcsv(
+                            $file,
+                            [
+                                $cashFlow
+                                    ->transaction_code,
+
+                                $cashFlow
+                                    ->subject,
+
+                                $category,
+
+                                $cashFlow
+                                    ->transaction_date
+                                    ->format('d/m/Y'),
+
+                                $cashIn !== ''
+                                    ? number_format(
+                                        $cashIn,
+                                        2,
+                                        '.',
+                                        ''
+                                    )
+                                    : '',
+
+                                $cashOut !== ''
+                                    ? number_format(
+                                        $cashOut,
+                                        2,
+                                        '.',
+                                        ''
+                                    )
+                                    : '',
+
+                                number_format(
+                                    $runningBalance,
+                                    2,
+                                    '.',
+                                    ''
+                                ),
+                            ]
+                        );
+                    }
+
+
+                    fclose($file);
+                },
+                $fileName,
+                [
+                    'Content-Type' =>
+                        'text/csv; charset=UTF-8',
+                ]
+            );
+        }
 }

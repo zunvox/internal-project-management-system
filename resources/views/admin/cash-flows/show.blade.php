@@ -161,6 +161,136 @@
             margin: 0;
         }
 
+        /* ---------- Change Log ---------- */
+
+        .change-log-card {
+            width: 62%;
+            max-width: 760px;
+            min-width: 560px;
+            margin: 20px auto 0;
+            background: white;
+            border: 1px solid #D0D5DD;
+            border-radius: 13px;
+            overflow: hidden;
+        }
+
+        .change-log-header {
+            padding: 14px 18px;
+            border-bottom: 1px solid #D0D5DD;
+            font-size: 15px;
+            font-weight: 700;
+            color: #101828;
+        }
+
+        .change-log-body {
+            padding: 0 18px;
+        }
+
+        .change-log-item {
+            padding: 14px 0;
+            border-bottom: 1px solid #EAECF0;
+            cursor: pointer;
+        }
+
+        .change-log-item:hover {
+            background: #F9FAFB;
+        }
+
+        .change-log-item:last-child {
+            border-bottom: none;
+        }
+
+        .change-log-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .change-log-action {
+            font-size: 12px;
+            font-weight: 700;
+            color: #101828;
+        }
+
+        .change-log-date {
+            font-size: 10px;
+            color: #98A2B3;
+        }
+
+        .change-log-description {
+            margin-top: 5px;
+            font-size: 11px;
+            color: #475467;
+        }
+
+        .change-log-user {
+            margin-top: 5px;
+            font-size: 10px;
+            color: #98A2B3;
+        }
+
+        .change-log-empty {
+            padding: 22px 0;
+            text-align: center;
+            font-size: 11px;
+            color: #98A2B3;
+        }
+
+        .change-log-detail {
+            max-height: 0;
+            overflow: hidden;
+            opacity: 0;
+            transition: max-height .35s ease, opacity .25s ease, margin-top .35s ease;
+            margin-top: 0;
+        }
+
+        .change-log-detail.open {
+            max-height: 600px;
+            opacity: 1;
+            margin-top: 16px;
+        }
+
+        .change-log-detail .detail-grid {
+            padding: 18px;
+            border: 1px solid #D0D5DD;
+            border-radius: 12px;
+            background: white;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 18px 40px;
+        }
+
+        .change-log-detail .detail-item {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .change-log-detail .detail-full {
+            grid-column: 1 / -1;
+        }
+
+        .change-log-detail .detail-label {
+            font-size: 11px;
+            font-weight: 600;
+            color: #667085;
+        }
+
+        .change-log-detail .detail-value {
+            font-size: 13px;
+            font-weight: 500;
+            color: #101828;
+        }
+
+        .changed-value {
+            color: #D92D20 !important;
+            font-weight: 600 !important;
+            background: #FEF3F2;
+            padding: 4px 7px;
+            border-radius: 5px;
+            width: fit-content;
+        }
 
         /* ---------- Responsive ---------- */
 
@@ -413,32 +543,305 @@
 
             </div>
 
+            <div class="change-log-card">
+
+                <div class="change-log-header">Change Log</div>
+
+                <div class="change-log-body">
+
+                    @forelse ($cashFlow->changeLogs as $log)
+
+                    @php
+                        $previousLog = $cashFlow->changeLogs
+                            ->where('id', '<', $log->id)
+                            ->sortByDesc('id')
+                            ->first();
+
+                        $previousSnapshot =
+                            $previousLog?->snapshot ?? [];
+                    @endphp
+
+                        <div class="change-log-item" data-log-id="{{ $log->id }}">
+
+                            <div class="change-log-top">
+
+                                <span class="change-log-action">
+                                    {{ $log->action }}
+                                </span>
+
+                                <span class="change-log-date">{{ $log->created_at->format('j F Y, g:i A') }}</span>
+
+                            </div>
+
+                            <div class="change-log-description">{{ $log->description }}</div>
+
+                            <div class="change-log-user">
+
+                                By:
+
+                                {{ $log->changedBy?->username ?? ($log->changedBy?->fullname ?? 'System') }}
+
+                            </div>
+
+
+                            @if ($log->snapshot)
+                                <div class="change-log-detail" id="change-log-detail-{{ $log->id }}">
+
+                                    <div class="detail-grid">
+
+
+                                        <div class="detail-item">
+
+                                            <div class="detail-label">Transaction ID</div>
+
+                                            <div class="detail-value">
+                                                {{ $log->snapshot['transaction_code'] ?? '-' }}
+                                            </div>
+
+                                        </div>
+
+
+                                        <div class="detail-item">
+
+                                            <div class="detail-label">
+                                                Category
+                                            </div>
+
+                                            <div class="detail-value
+                                                {{
+                                                    $previousLog
+                                                    &&
+                                                    (
+                                                        ($previousSnapshot['category'] ?? null)
+                                                        !==
+                                                        ($log->snapshot['category'] ?? null)
+
+                                                        ||
+
+                                                        ($previousSnapshot['other_category'] ?? null)
+                                                        !==
+                                                        ($log->snapshot['other_category'] ?? null)
+                                                    )
+                                                        ? 'changed-value'
+                                                        : ''
+                                                }}"
+                                            >{{ $log->snapshot['category'] ?? '-' }}
+                                            </div>
+
+                                        </div>
+
+                                        @if (!empty($log->snapshot['other_category']))
+
+                                            <div class="detail-item">
+
+                                                <div class="detail-label">
+                                                    Specific Category
+                                                </div>
+
+                                                <div
+                                                    class="detail-value
+                                                    {{
+                                                        $previousLog
+                                                        &&
+                                                        ($previousSnapshot['other_category'] ?? null)
+                                                        !==
+                                                        ($log->snapshot['other_category'] ?? null)
+                                                            ? 'changed-value'
+                                                            : ''
+                                                    }}"
+                                                >
+                                                    {{ $log->snapshot['other_category'] }}
+                                                </div>
+
+                                            </div>
+
+                                        @endif
+
+                                        <div class="detail-item detail-full">
+
+                                            <div class="detail-label">Subject</div>
+
+                                            <div class="detail-value
+                                                {{
+                                                    $previousLog
+                                                    &&
+                                                    ($previousSnapshot['subject'] ?? null)
+                                                    !==
+                                                    ($log->snapshot['subject'] ?? null)
+                                                        ? 'changed-value'
+                                                        : ''
+                                                }}"
+                                            >{{ $log->snapshot['subject'] ?? '-' }}
+                                            </div>
+
+                                        </div>
+
+
+                                        <div class="detail-item">
+
+                                            <div class="detail-label">Type</div>
+
+                                            <div class="detail-value
+                                                {{
+                                                    $previousLog
+                                                    &&
+                                                    ($previousSnapshot['type'] ?? null)
+                                                    !==
+                                                    ($log->snapshot['type'] ?? null)
+                                                        ? 'changed-value'
+                                                        : ''
+                                                }}"
+                                            >{{ $log->snapshot['type'] ?? '-' }}
+                                            </div>
+
+                                        </div>
+
+
+                                        <div class="detail-item">
+
+                                            <div class="detail-label">Date</div>
+
+                                            <div class="detail-value
+                                                {{
+                                                    $previousLog
+                                                    &&
+                                                    ($previousSnapshot['transaction_date'] ?? null)
+                                                    !==
+                                                    ($log->snapshot['transaction_date'] ?? null)
+                                                        ? 'changed-value'
+                                                        : ''
+                                                }}"
+                                            >
+                                                @if (!empty($log->snapshot['transaction_date']))
+
+                                                    {{
+                                                        \Carbon\Carbon::parse(
+                                                            $log->snapshot['transaction_date']
+                                                        )->format('j F Y')
+                                                    }}
+
+                                                @else
+
+                                                    -
+
+                                                @endif
+                                            </div>
+
+                                        </div>
+
+
+                                        <div class="detail-item">
+
+                                            <div class="detail-label">Amount</div>
+
+                                            <div class="detail-value
+                                                {{
+                                                    $previousLog
+                                                    &&
+                                                    ($previousSnapshot['amount'] ?? null)
+                                                    !=
+                                                    ($log->snapshot['amount'] ?? null)
+                                                        ? 'changed-value'
+                                                        : ''
+                                                }}"
+                                            >
+                                                RM {{
+                                                    number_format(
+                                                        $log->snapshot['amount'] ?? 0,
+                                                        2
+                                                    )
+                                                }}
+                                            </div>
+
+                                        </div>
+
+
+                                        <div class="detail-item">
+
+                                            <div class="detail-label">Logged By</div>
+
+                                            <div class="detail-value">{{ $log->snapshot['logged_by'] ?? '-' }}</div>
+
+                                        </div>
+
+
+                                        <div class="detail-item detail-full">
+
+                                            <div class="detail-label">Description</div>
+
+                                            <div class="detail-value
+                                                {{
+                                                    $previousLog
+                                                    &&
+                                                    ($previousSnapshot['description'] ?? null)
+                                                    !==
+                                                    ($log->snapshot['description'] ?? null)
+                                                        ? 'changed-value'
+                                                        : ''
+                                                }}"
+                                            >
+                                                {{ $log->snapshot['description'] ?? '-' }}
+                                            </div>
+
+                                        </div>
+
+                                    </div>
+
+                                </div>
+                            @endif
+
+                        </div>
+
+                    @empty
+
+                        <div class="change-log-empty">No change history available.</div>
+
+                    @endforelse
+
+                </div>
+
+            </div>
+
         </div>
 
     </div>
 
     <script>
-        const deleteForm =
-            document.querySelector('.delete-form');
+        const deleteForm = document.querySelector('.delete-form');
 
 
         deleteForm?.addEventListener(
             'submit',
             function(event) {
-
                 const confirmed = confirm(
-                    'Are you sure you want to delete this transaction? This action cannot be undone.'
-                );
-
-
+                    'Are you sure you want to delete this transaction? This action cannot be undone.');
                 if (!confirmed) {
-
                     event.preventDefault();
-
                 }
-
             }
         );
+
+        document
+            .querySelectorAll('.change-log-item')
+            .forEach(function(item) 
+            {
+                item.addEventListener(
+                    'click',
+                    function() 
+                    {
+                        const logId = item.dataset.logId;
+
+                        const detail = document.getElementById('change-log-detail-' + logId);
+
+                        if (!detail) 
+                        {
+                            return;
+                        }
+
+                        detail.classList.toggle('open');
+                    }
+                );
+            });
     </script>
 
 </body>

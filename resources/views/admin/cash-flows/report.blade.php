@@ -153,7 +153,7 @@
         }
 
         .period-picker-area {
-            padding: 12px 24px 4px;
+            padding: 12px 24px 20px;
         }
 
         .period-picker {
@@ -209,22 +209,6 @@
             grid-template-columns: 1fr 1fr;
             gap: 80px;
             padding: 12px 24px 4px;
-        }
-
-        .filter-actions {
-            display: flex;
-            justify-content: flex-end;
-            padding: 0 24px 12px;
-        }
-
-        .generate-button {
-            border: none;
-            border-radius: 4px;
-            padding: 7px 14px;
-            background: #039BEF;
-            color: white;
-            font-size: 12px;
-            cursor: pointer;
         }
 
         .summary-content {
@@ -354,12 +338,23 @@
             border-radius: 4px;
             background: white;
             font-size: 12px;
+            cursor: auto;
+        }
+        
+        .download-button hover{
+            background: #F2F4F7;
+            border-color: #98A2B3;
         }
 
         .download-button.pdf {
             background: #039BEF;
             border-color: #039BEF;
             color: white;
+        }
+
+        .download-button.pdf:hover {
+            background: #0288D1;
+            border-color: #0288D1;
         }
 
         .download-button.disabled {
@@ -571,12 +566,6 @@
 
                         </div>
 
-                    </div>
-
-
-                    <div class="filter-actions">
-                        <button type="submit" class="generate-button"id="generate-report-button">Generate
-                            Report</button>
                     </div>
 
                 </form>
@@ -846,13 +835,8 @@
 
                 <div class="export-actions">
 
-                    <button type="button" class="download-button" disabled>
-                        ↓ Download CSV
-                    </button>
-
-                    <button type="button" class="download-button pdf" disabled>
-                        ↓ Download PDF
-                    </button>
+                    <button type="button" class="download-button" id="download-csv-button">↓ Download CSV</button>
+                    <button type="button" class="download-button pdf" id="download-pdf-button">↓ Download PDF</button>
 
                 </div>
 
@@ -874,9 +858,6 @@
 
         const toInput =
             document.getElementById('to');
-
-        const generateButton =
-            document.getElementById('generate-report-button');
 
         const weeklyPicker =
             document.getElementById('weekly-picker');
@@ -986,24 +967,6 @@
 
 
         showPeriodPicker(periodInput.value);
-
-        generateButton.addEventListener(
-            'click',
-            function(event) {
-                if (
-                    periodInput.value === 'custom' &&
-                    fromInput.value &&
-                    toInput.value &&
-                    fromInput.value > toInput.value
-                ) {
-                    event.preventDefault();
-
-                    alert(
-                        'The From date cannot be later than the To date.'
-                    );
-                }
-            }
-        );
 
         function formatMoney(value) {
             return 'RM ' +
@@ -1183,14 +1146,20 @@
         }
 
         function updateReportPreview() {
-            const range =
-                getSelectedRange();
 
+            if (
+                periodInput.value === 'custom' &&
+                fromInput.value &&
+                toInput.value &&
+                fromInput.value > toInput.value
+            ) {
+                return;
+            }
+            const range = getSelectedRange();
 
             if (!range) {
                 return;
             }
-
 
             const filteredTransactions = allCashFlows.filter(
                 function(transaction) {
@@ -1326,16 +1295,15 @@
             const totalCashIn = transactions.filter(transaction => transaction.type === 'Cash In').reduce((total,
                 transaction) => total + Number(transaction.amount), 0);
 
-            const totalCashOut = transactions.filter(transaction => transaction.type === 'Cash Out')
-                .reduce((total, transaction) => total + Number(transaction.amount), 0);
+            const totalCashOut = transactions.filter(transaction => transaction.type === 'Cash Out').reduce((total,
+                transaction) => total + Number(transaction.amount), 0);
 
             html += `
         <tr class="closing-row">
 
             <td colspan="3">
 
-                Closing balance —
-                ${formatDate(toLocalDateString(range.to))}
+                Closing balance — ${formatDate(toLocalDateString(range.to))}
 
             </td>
 
@@ -1355,11 +1323,103 @@
     `;
 
 
-            reportTableBody.innerHTML =
-                html;
+            reportTableBody.innerHTML = html;
         }
 
         updateReportPreview();
+
+        const downloadPdfButton =
+            document.getElementById(
+                'download-pdf-button'
+            );
+
+        const downloadCsvButton =
+            document.getElementById(
+                'download-csv-button'
+            );
+
+
+        function buildDownloadUrl(baseUrl) {
+            const params =
+                new URLSearchParams();
+
+            params.set(
+                'period',
+                periodInput.value
+            );
+
+
+            if (
+                periodInput.value === 'weekly'
+            ) {
+                params.set(
+                    'week',
+                    weekInput.value
+                );
+            } else if (
+                periodInput.value === 'monthly'
+            ) {
+                params.set(
+                    'month',
+                    monthInput.value
+                );
+            } else if (
+                periodInput.value === 'yearly'
+            ) {
+                params.set(
+                    'year',
+                    yearInput.value
+                );
+            } else if (
+                periodInput.value === 'custom'
+            ) {
+
+                params.set(
+                    'from',
+                    fromInput.value
+                );
+
+                params.set(
+                    'to',
+                    toInput.value
+                );
+            }
+
+
+            return baseUrl +
+                '?' +
+                params.toString();
+        }
+
+
+        downloadPdfButton.addEventListener(
+            'click',
+            function() {
+                const url =
+                    buildDownloadUrl(
+                        @json(route('admin.cash-flows.report.pdf'))
+                    );
+
+                window.open(
+                    url,
+                    '_blank'
+                );
+            }
+        );
+
+
+        downloadCsvButton.addEventListener(
+            'click',
+            function() {
+                const url =
+                    buildDownloadUrl(
+                        @json(route('admin.cash-flows.report.csv'))
+                    );
+
+                window.location.href =
+                    url;
+            }
+        );
     </script>
 
 </body>

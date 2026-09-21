@@ -39,4 +39,9 @@ class CashFlow extends Model
     {
         return $this->belongsTo(CashFlowCategory::class, 'flowcategory_id');
     }
+
+    public function changeLogs()
+    {
+        return $this->hasMany( CashFlowChangeLog::class,'cash_flow_id');
+    }
 }

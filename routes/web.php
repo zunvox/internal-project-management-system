@@ -179,6 +179,12 @@ Route::middleware('auth')->group(function () {
             Route::post('/payment-vouchers/claims/{claim}/generate', [PaymentVoucherController::class, 'generateClaimVoucher'])
                 ->name('payment-vouchers.claims.generate');
 
+            Route::get('/cash-flows/report/pdf', [CashFlowController::class, 'downloadReportPdf'])
+                ->name('cash-flows.report.pdf');
+
+            Route::get('/cash-flows/report/csv', [CashFlowController::class, 'downloadReportCsv'])
+                ->name('cash-flows.report.csv');
+
             /* Cash Flow Management */
 
             // Cash Flow list

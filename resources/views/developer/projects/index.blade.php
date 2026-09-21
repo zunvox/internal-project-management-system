@@ -427,6 +427,13 @@
             margin-left: -8px;
         }
 
+        .developer-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 50%;
+        }
+
         .developer-avatar:first-child {
             margin-left: 0;
         }
@@ -510,6 +517,13 @@
             font-size: 10px;
             font-weight: 700;
             flex-shrink: 0;
+        }
+
+        .milestone-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 50%;
         }
 
         .milestone-user {
@@ -976,380 +990,129 @@
 
         document.addEventListener('DOMContentLoaded', function() {
 
-            // ---------------- SEARCH ----------------
+                    // Search
 
-            const searchInput = document.getElementById('project-search');
+                    const searchInput = document.getElementById('project-search');
 
-            searchInput.addEventListener('input', function() {
+                    searchInput.addEventListener('input', function() {
 
-                const searchValue = this.value.toLowerCase().trim();
+                        const searchValue = this.value.toLowerCase().trim();
 
-                const columns = document.querySelectorAll('.column');
+                        const columns = document.querySelectorAll('.column');
 
-                columns.forEach(function(column) {
+                        columns.forEach(function(column) {
 
-                    const projectCards =
-                        column.querySelectorAll('.project-card-link');
+                            const projectCards =
+                                column.querySelectorAll('.project-card-link');
 
-                    const noResultsMessage =
-                        column.querySelector('.no-search-results');
+                            const noResultsMessage =
+                                column.querySelector('.no-search-results');
 
-                    let visibleProjects = 0;
+                            let visibleProjects = 0;
 
-                    projectCards.forEach(function(card) {
+                            projectCards.forEach(function(card) {
 
-                        const searchText =
-                            card.dataset.search || '';
+                                const searchText =
+                                    card.dataset.search || '';
 
-                        if (searchText.includes(searchValue)) {
+                                if (searchText.includes(searchValue)) {
 
-                            card.style.display = '';
-                            visibleProjects++;
+                                    card.style.display = '';
+                                    visibleProjects++;
 
-                        } else {
+                                } else {
 
-                            card.style.display = 'none';
+                                    card.style.display = 'none';
 
-                        }
+                                }
+
+                            });
+
+                            if (
+                                searchValue !== '' &&
+                                visibleProjects === 0 &&
+                                projectCards.length > 0
+                            ) {
+
+                                noResultsMessage.style.display = 'block';
+
+                            } else {
+
+                                noResultsMessage.style.display = 'none';
+
+                            }
+
+                        });
 
                     });
 
-                    if (
-                        searchValue !== '' &&
-                        visibleProjects === 0 &&
-                        projectCards.length > 0
-                    ) {
 
-                        noResultsMessage.style.display = 'block';
+                    // Modal
 
-                    } else {
+                    const projectCards = document.querySelectorAll('.project-card-link');
 
-                        noResultsMessage.style.display = 'none';
+                    const modal = document.getElementById('project-modal');
 
-                    }
+                    const closeModalButton = document.getElementById('project-modal-close');
 
-                });
+                    const modalProjectName = document.getElementById('modal-project-name');
 
-            });
+                    const modalProjectId = document.getElementById('modal-project-id');
 
+                    const modalProjectStatus = document.getElementById('modal-project-status');
 
-            // ---------------- MODAL ----------------
+                    const modalProjectCreator = document.getElementById('modal-project-creator');
 
-            const projectCards = document.querySelectorAll('.project-card-link');
+                    const modalProjectDevelopers = document.getElementById('modal-project-developers');
 
-            const modal = document.getElementById('project-modal');
+                    const modalProjectDuration = document.getElementById('modal-project-duration');
 
-            const closeModalButton = document.getElementById('project-modal-close');
+                    const modalProjectDescription = document.getElementById('modal-project-description');
 
-            const modalProjectName = document.getElementById('modal-project-name');
+                    const modalProjectMilestones = document.getElementById('modal-project-milestones');
 
-            const modalProjectId = document.getElementById('modal-project-id');
+                    const milestoneForm = document.getElementById('milestone-form');
 
-            const modalProjectStatus = document.getElementById('modal-project-status');
+                    const milestoneDescription = document.getElementById('milestone-description');
 
-            const modalProjectCreator = document.getElementById('modal-project-creator');
+                    let currentProject = null;
 
-            const modalProjectDevelopers = document.getElementById('modal-project-developers');
+                    function addMilestoneToModal(milestone) {
 
-            const modalProjectDuration = document.getElementById('modal-project-duration');
+                        const emptyMessage = modalProjectMilestones.querySelector('.milestone-empty');
 
-            const modalProjectDescription = document.getElementById('modal-project-description');
-
-            const modalProjectMilestones = document.getElementById('modal-project-milestones');
-
-            const milestoneForm = document.getElementById('milestone-form');
-
-            const milestoneDescription = document.getElementById('milestone-description');
-
-            let currentProject = null;
-
-            function addMilestoneToModal(milestone) {
-
-                const emptyMessage = modalProjectMilestones.querySelector('.milestone-empty');
-
-                if (emptyMessage) {
-                    emptyMessage.remove();
-                }
-
-                const milestoneItem = document.createElement('div');
-
-                milestoneItem.classList.add('milestone-item');
-
-                const header = document.createElement('div');
-
-                header.classList.add('milestone-comment-header');
-
-
-                // Avatar
-
-                const avatar = document.createElement('div');
-
-                avatar.classList.add('milestone-avatar');
-
-                const initials = milestone.user
-                    .split(' ')
-                    .map(function(name) {
-                        return name.charAt(0);
-                    })
-                    .join('')
-                    .substring(0, 2)
-                    .toUpperCase();
-
-                avatar.textContent = initials;
-
-
-                // Developer information
-
-                const userInfo = document.createElement('div');
-
-                const userName = document.createElement('div');
-
-                userName.classList.add('milestone-user');
-
-                userName.textContent = milestone.user;
-
-
-                const date = document.createElement('div');
-
-                date.classList.add('milestone-date');
-
-                date.textContent = milestone.created_at;
-
-
-                userInfo.appendChild(userName);
-                userInfo.appendChild(date);
-
-
-                header.appendChild(avatar);
-                header.appendChild(userInfo);
-
-
-                // Description
-
-                const description = document.createElement('div');
-
-                description.classList.add('milestone-description');
-
-                description.textContent = milestone.description;
-
-
-                milestoneItem.appendChild(header);
-                milestoneItem.appendChild(description);
-
-                if (milestone.user_id === currentUserId) {
-
-                    const deleteButton =
-                        document.createElement('button');
-
-                    deleteButton.type = 'button';
-
-                    deleteButton.classList.add(
-                        'milestone-delete-btn'
-                    );
-
-                    deleteButton.textContent = 'Delete';
-
-                    deleteButton.addEventListener(
-                        'click',
-                        async function() {
-
-                            if (
-                                !confirm(
-                                    'Delete this milestone comment?'
-                                )
-                            ) {
-                                return;
-                            }
-
-                            const deleteUrl =
-                                milestoneDeleteUrl
-                                .replace(
-                                    '__PROJECT__',
-                                    currentProject.id
-                                )
-                                .replace(
-                                    '__MILESTONE__',
-                                    milestone.id
-                                );
-
-                            try {
-
-                                const response = await fetch(
-                                    deleteUrl, {
-                                        method: 'DELETE',
-
-                                        headers: {
-                                            'Accept': 'application/json',
-
-                                            'X-CSRF-TOKEN': document.querySelector(
-                                                'meta[name="csrf-token"]'
-                                            ).content,
-                                        },
-                                    }
-                                );
-
-                                if (!response.ok) {
-                                    throw new Error(
-                                        'Unable to delete milestone.'
-                                    );
-                                }
-
-                                milestoneItem.remove();
-
-                                currentProject.milestones =
-                                    currentProject.milestones.filter(
-                                        function(item) {
-                                            return item.id !== milestone.id;
-                                        }
-                                    );
-
-                                if (
-                                    currentProject.milestones.length === 0
-                                ) {
-                                    const emptyMessage =
-                                        document.createElement('div');
-
-                                    emptyMessage.classList.add(
-                                        'milestone-empty'
-                                    );
-
-                                    emptyMessage.textContent =
-                                        'No milestone updates yet.';
-
-                                    modalProjectMilestones.appendChild(
-                                        emptyMessage
-                                    );
-                                }
-
-                            } catch (error) {
-
-                                console.error(error);
-
-                                alert(
-                                    'Unable to delete milestone comment.'
-                                );
-
-                            }
-
+                        if (emptyMessage) {
+                            emptyMessage.remove();
                         }
-                    );
 
-                    milestoneItem.appendChild(
-                        deleteButton
-                    );
-                }
+                        const milestoneItem = document.createElement('div');
 
-                modalProjectMilestones.appendChild(
-                    milestoneItem
-                );
+                        milestoneItem.classList.add('milestone-item');
+
+                        const header = document.createElement('div');
+
+                        header.classList.add('milestone-comment-header');
 
 
-                // Automatically scroll to newest comment
+                        // Avatar
 
-                modalProjectMilestones.scrollTop =
-                    modalProjectMilestones.scrollHeight;
-            }
+                        const avatar = document.createElement('div');
 
-            projectCards.forEach(function(card) {
+                        avatar.classList.add('milestone-avatar');
 
-                card.addEventListener('click', function() {
+                        if (milestone.user_photo) {
 
-                    const projectId = card.dataset.projectId;
-                    const project = projectData[projectId];
+                            const image = document.createElement('img');
 
-                    if (!project) {
-                        return;
-                    }
+                            image.src = milestone.user_photo;
 
-                    currentProject = project;
+                            image.alt = milestone.user;
 
-                    milestoneForm.action = milestoneStoreUrl.replace('__PROJECT__', project.id);
+                            avatar.appendChild(image);
 
-                    milestoneDescription.value = '';
+                        } else {
 
-
-                    // Project name
-                    modalProjectName.textContent = project.name;
-
-
-                    // Project ID
-                    modalProjectId.textContent =
-                        'PRJ-' +
-                        String(project.id).padStart(4, '0');
-
-
-                    // Project status
-                    modalProjectStatus.className = 'status-pill';
-
-                    if (project.status === 'Not Started') {
-
-                        modalProjectStatus.textContent = 'Not Started';
-
-                        modalProjectStatus.classList.add('pill-not-started');
-
-                    } else if (project.status === 'Ongoing') {
-
-                        modalProjectStatus.textContent =
-                            'Ongoing';
-
-                        modalProjectStatus.classList.add(
-                            'pill-ongoing'
-                        );
-
-                    } else if (project.status === 'Completed') {
-
-                        modalProjectStatus.textContent =
-                            'Completed';
-
-                        modalProjectStatus.classList.add(
-                            'pill-completed'
-                        );
-
-                    } else if (project.status === 'On Hold') {
-
-                        modalProjectStatus.textContent =
-                            'On Hold';
-
-                        modalProjectStatus.classList.add(
-                            'pill-on-hold'
-                        );
-
-                    }
-
-
-                    // Created by
-                    modalProjectCreator.textContent =
-                        project.creator;
-
-
-                    // Duration
-                    modalProjectDuration.textContent =
-                        project.start_date +
-                        ' - ' +
-                        project.end_date;
-
-
-                    // Description
-                    modalProjectDescription.textContent =
-                        project.description;
-
-
-                    // ---------------- DEVELOPERS ----------------
-
-                    modalProjectDevelopers.innerHTML = '';
-
-                    if (project.developers.length > 0) {
-
-                        project.developers.forEach(function(developer) {
-
-                            const avatar =
-                                document.createElement('div');
-
-                            avatar.classList.add(
-                                'developer-avatar'
-                            );
-
-                            const initials = developer
+                            const initials = milestone.user
                                 .split(' ')
                                 .map(function(name) {
                                     return name.charAt(0);
@@ -1358,168 +1121,429 @@
                                 .substring(0, 2)
                                 .toUpperCase();
 
-                            avatar.textContent =
-                                initials;
+                            avatar.textContent = initials;
+                        }
 
-                            avatar.title =
-                                developer;
 
-                            modalProjectDevelopers.appendChild(
-                                avatar
+                        // Developer information
+
+                        const userInfo = document.createElement('div');
+
+                        const userName = document.createElement('div');
+
+                        userName.classList.add('milestone-user');
+
+                        userName.textContent = milestone.user;
+
+
+                        const date = document.createElement('div');
+
+                        date.classList.add('milestone-date');
+
+                        date.textContent = milestone.created_at;
+
+
+                        userInfo.appendChild(userName);
+                        userInfo.appendChild(date);
+
+
+                        header.appendChild(avatar);
+                        header.appendChild(userInfo);
+
+
+                        // Description
+
+                        const description = document.createElement('div');
+
+                        description.classList.add('milestone-description');
+
+                        description.textContent = milestone.description;
+
+
+                        milestoneItem.appendChild(header);
+                        milestoneItem.appendChild(description);
+
+                        if (milestone.user_id === currentUserId) {
+
+                            const deleteButton =
+                                document.createElement('button');
+
+                            deleteButton.type = 'button';
+
+                            deleteButton.classList.add(
+                                'milestone-delete-btn'
                             );
+
+                            deleteButton.textContent = 'Delete';
+
+                            deleteButton.addEventListener(
+                                'click',
+                                async function() {
+
+                                    if (
+                                        !confirm(
+                                            'Delete this milestone comment?'
+                                        )
+                                    ) {
+                                        return;
+                                    }
+
+                                    const deleteUrl =
+                                        milestoneDeleteUrl
+                                        .replace(
+                                            '__PROJECT__',
+                                            currentProject.id
+                                        )
+                                        .replace(
+                                            '__MILESTONE__',
+                                            milestone.id
+                                        );
+
+                                    try {
+
+                                        const response = await fetch(
+                                            deleteUrl, {
+                                                method: 'DELETE',
+
+                                                headers: {
+                                                    'Accept': 'application/json',
+
+                                                    'X-CSRF-TOKEN': document.querySelector(
+                                                        'meta[name="csrf-token"]'
+                                                    ).content,
+                                                },
+                                            }
+                                        );
+
+                                        if (!response.ok) {
+                                            throw new Error(
+                                                'Unable to delete milestone.'
+                                            );
+                                        }
+
+                                        milestoneItem.remove();
+
+                                        currentProject.milestones =
+                                            currentProject.milestones.filter(
+                                                function(item) {
+                                                    return item.id !== milestone.id;
+                                                }
+                                            );
+
+                                        if (
+                                            currentProject.milestones.length === 0
+                                        ) {
+                                            const emptyMessage =
+                                                document.createElement('div');
+
+                                            emptyMessage.classList.add(
+                                                'milestone-empty'
+                                            );
+
+                                            emptyMessage.textContent =
+                                                'No milestone updates yet.';
+
+                                            modalProjectMilestones.appendChild(
+                                                emptyMessage
+                                            );
+                                        }
+
+                                    } catch (error) {
+
+                                        console.error(error);
+
+                                        alert(
+                                            'Unable to delete milestone comment.'
+                                        );
+
+                                    }
+
+                                }
+                            );
+
+                            milestoneItem.appendChild(
+                                deleteButton
+                            );
+                        }
+
+                        modalProjectMilestones.appendChild(
+                            milestoneItem
+                        );
+
+
+                        // Automatically scroll to newest comment
+
+                        modalProjectMilestones.scrollTop =
+                            modalProjectMilestones.scrollHeight;
+                    }
+
+                    projectCards.forEach(function(card) {
+
+                            card.addEventListener('click', function() {
+
+                                    const projectId = card.dataset.projectId;
+                                    const project = projectData[projectId];
+
+                                    if (!project) {
+                                        return;
+                                    }
+
+                                    currentProject = project;
+
+                                    milestoneForm.action = milestoneStoreUrl.replace('__PROJECT__', project.id);
+
+                                    milestoneDescription.value = '';
+
+
+                                    // Project name
+                                    modalProjectName.textContent = project.name;
+
+
+                                    // Project ID
+                                    modalProjectId.textContent =
+                                        'PRJ-' +
+                                        String(project.id).padStart(4, '0');
+
+
+                                    // Project status
+                                    modalProjectStatus.className = 'status-pill';
+
+                                    if (project.status === 'Not Started') {
+
+                                        modalProjectStatus.textContent = 'Not Started';
+
+                                        modalProjectStatus.classList.add('pill-not-started');
+
+                                    } else if (project.status === 'Ongoing') {
+
+                                        modalProjectStatus.textContent =
+                                            'Ongoing';
+
+                                        modalProjectStatus.classList.add(
+                                            'pill-ongoing'
+                                        );
+
+                                    } else if (project.status === 'Completed') {
+
+                                        modalProjectStatus.textContent =
+                                            'Completed';
+
+                                        modalProjectStatus.classList.add(
+                                            'pill-completed'
+                                        );
+
+                                    } else if (project.status === 'On Hold') {
+
+                                        modalProjectStatus.textContent =
+                                            'On Hold';
+
+                                        modalProjectStatus.classList.add(
+                                            'pill-on-hold'
+                                        );
+
+                                    }
+
+
+                                    // Created by
+                                    modalProjectCreator.textContent =
+                                        project.creator;
+
+
+                                    // Duration
+                                    modalProjectDuration.textContent =
+                                        project.start_date +
+                                        ' - ' +
+                                        project.end_date;
+
+
+                                    // Description
+                                    modalProjectDescription.textContent =
+                                        project.description;
+
+
+                                    // Developers
+
+                                    modalProjectDevelopers.innerHTML = '';
+
+                                    if (project.developers.length > 0) {
+
+                                        project.developers.forEach(function(developer) {
+
+                                            const avatar = document.createElement('div');
+
+                                            avatar.classList.add('developer-avatar');
+
+                                            avatar.title = developer.name;
+
+                                            if (developer.photo) {
+
+                                                const image = document.createElement('img');
+
+                                                image.src = developer.photo;
+
+                                                image.alt = developer.name;
+
+                                                avatar.appendChild(image);
+
+                                            } else {
+
+                                                const initials = developer.name
+                                                    .split(' ')
+                                                    .map(function(name) {
+                                                        return name.charAt(0);
+                                                    })
+                                                    .join('')
+                                                    .substring(0, 2)
+                                                    .toUpperCase();
+
+                                                avatar.textContent = initials;
+                                            }
+
+                                            modalProjectDevelopers.appendChild(avatar);
+                                        });
+
+                                        // Milestones
+
+                                        modalProjectMilestones.innerHTML = '';
+
+                                        if (
+                                            project.milestones &&
+                                            project.milestones.length > 0
+                                        ) {
+
+                                            project.milestones.forEach(
+                                                function(milestone) {
+
+                                                    addMilestoneToModal(
+                                                        milestone
+                                                    );
+
+                                                }
+                                            );
+
+                                        } else {
+
+                                            const emptyMessage =
+                                                document.createElement('div');
+
+                                            emptyMessage.classList.add(
+                                                'milestone-empty'
+                                            );
+
+                                            emptyMessage.textContent =
+                                                'No milestone updates yet.';
+
+                                            modalProjectMilestones.appendChild(
+                                                emptyMessage
+                                            );
+
+                                        }
+
+                                        // Open modal
+                                        modal.classList.add('active');
+                                    });
+                            });
+
+                        milestoneDescription.addEventListener('keydown', function(event) {
+
+                            if (event.key === 'Enter' && !event.shiftKey) {
+
+                                event.preventDefault();
+
+                                if (milestoneDescription.value.trim() === '') {
+                                    return;
+                                }
+
+                                milestoneForm.requestSubmit();
+                            }
 
                         });
 
-                    } else {
+                        milestoneForm.addEventListener('submit', async function(event) {
 
-                        modalProjectDevelopers.textContent =
-                            'No developers assigned';
+                            event.preventDefault();
 
-                    }
+                            const description =
+                                milestoneDescription.value.trim();
 
+                            if (description === '') {
+                                return;
+                            }
 
-                    // ---------------- MILESTONES ----------------
+                            const formData =
+                                new FormData(milestoneForm);
 
-                    modalProjectMilestones.innerHTML = '';
+                            try {
 
-                    if (
-                        project.milestones &&
-                        project.milestones.length > 0
-                    ) {
+                                const response = await fetch(
+                                    milestoneForm.action, {
+                                        method: 'POST',
 
-                        project.milestones.forEach(
-                            function(milestone) {
+                                        headers: {
+                                            'Accept': 'application/json',
+                                        },
 
-                                addMilestoneToModal(
-                                    milestone
+                                        body: formData,
+                                    }
                                 );
+
+                                if (!response.ok) {
+                                    throw new Error(
+                                        'Unable to post milestone.'
+                                    );
+                                }
+
+                                const data = await response.json();
+
+                                const milestone =
+                                    data.milestone;
+
+                                addMilestoneToModal(milestone);
+
+                                currentProject.milestones.push(milestone);
+
+                                milestoneDescription.value = '';
+
+                                milestoneDescription.focus();
+
+                            } catch (error) {
+
+                                console.error(error);
+
+                                alert(
+                                    'Unable to post milestone update.'
+                                );
+
+                            }
+
+                        });
+
+
+                        // Close modal
+
+                        closeModalButton.addEventListener(
+                            'click',
+                            function() {
+
+                                modal.classList.remove('active');
 
                             }
                         );
 
-                    } else {
+                        modal.addEventListener(
+                            'click',
+                            function(event) {
 
-                        const emptyMessage =
-                            document.createElement('div');
+                                if (event.target === modal) {
 
-                        emptyMessage.classList.add(
-                            'milestone-empty'
+                                    modal.classList.remove('active');
+
+                                }
+
+                            }
                         );
 
-                        emptyMessage.textContent =
-                            'No milestone updates yet.';
-
-                        modalProjectMilestones.appendChild(
-                            emptyMessage
-                        );
-
-                    }
-
-                    // Open modal
-                    modal.classList.add('active');
-                });
-            });
-
-            milestoneDescription.addEventListener('keydown', function(event) {
-
-                if (event.key === 'Enter' && !event.shiftKey) {
-
-                    event.preventDefault();
-
-                    if (milestoneDescription.value.trim() === '') {
-                        return;
-                    }
-
-                    milestoneForm.requestSubmit();
-                }
-
-            });
-
-            milestoneForm.addEventListener('submit', async function(event) {
-
-                event.preventDefault();
-
-                const description =
-                    milestoneDescription.value.trim();
-
-                if (description === '') {
-                    return;
-                }
-
-                const formData =
-                    new FormData(milestoneForm);
-
-                try {
-
-                    const response = await fetch(
-                        milestoneForm.action, {
-                            method: 'POST',
-
-                            headers: {
-                                'Accept': 'application/json',
-                            },
-
-                            body: formData,
-                        }
-                    );
-
-                    if (!response.ok) {
-                        throw new Error(
-                            'Unable to post milestone.'
-                        );
-                    }
-
-                    const data = await response.json();
-
-                    const milestone =
-                        data.milestone;
-
-                    addMilestoneToModal(milestone);
-
-                    currentProject.milestones.push(milestone);
-
-                    milestoneDescription.value = '';
-
-                    milestoneDescription.focus();
-
-                } catch (error) {
-
-                    console.error(error);
-
-                    alert(
-                        'Unable to post milestone update.'
-                    );
-
-                }
-
-            });
-
-
-            // ---------------- CLOSE MODAL ----------------
-
-            closeModalButton.addEventListener(
-                'click',
-                function() {
-
-                    modal.classList.remove('active');
-
-                }
-            );
-
-            modal.addEventListener(
-                'click',
-                function(event) {
-
-                    if (event.target === modal) {
-
-                        modal.classList.remove('active');
-
-                    }
-
-                }
-            );
-
-        });
+                    });
     </script>
 
 </body>

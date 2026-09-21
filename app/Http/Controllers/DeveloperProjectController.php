@@ -39,7 +39,14 @@ class DeveloperProjectController extends Controller
                     'start_date' => $project->start_date?->format('d F Y'),
                     'end_date' => $project->end_date?->format('d F Y'),
                     'developers' => $project->assignedUsers
-                        ->pluck('fullname')
+                        ->map(function ($developer) {
+                            return [
+                                'name' => $developer->fullname,
+                                'photo' => $developer->profile_picture
+                                    ? asset('storage/' . $developer->profile_picture)
+                                    : null,
+                            ];
+                        })
                         ->values()
                         ->all(),
 
@@ -101,15 +108,11 @@ class DeveloperProjectController extends Controller
 
             'milestone' => [
                 'id' => $milestone->id,
-
+                'user_id' => $milestone->user_id,
                 'description' => $milestone->description,
-
-                'user' => $milestone->user?->fullname
-                    ?? 'Unknown Developer',
-
-                'created_at' => $milestone->created_at->format(
-                    'd F Y, h:i A'
-                ),
+                'user' => $milestone->user?->fullname ?? 'Unknown Developer',
+                'user_photo' => $milestone->user?->profile_picture ? asset('storage/' . $milestone->user->profile_picture) : null,
+                'created_at' => $milestone->created_at->format('d F Y, h:i A'),
             ],
         ]);
     }

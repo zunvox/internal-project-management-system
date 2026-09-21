@@ -57,6 +57,7 @@ class DeveloperProjectController extends Controller
                                 'description' => $milestone->description,
                                 'user_id' => $milestone->user_id,
                                 'user' => $milestone->user?->fullname ?? 'Unknown Developer',
+                                'user_photo' => $milestone->user?->profile_picture ? asset('storage/' . $milestone->user->profile_picture) : null,
                                 'created_at' => $milestone->created_at->format('d F Y, h:i A'),
                             ];
                         })

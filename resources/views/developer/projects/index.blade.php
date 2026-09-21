@@ -1002,18 +1002,15 @@
 
                         columns.forEach(function(column) {
 
-                            const projectCards =
-                                column.querySelectorAll('.project-card-link');
+                            const projectCards = column.querySelectorAll('.project-card-link');
 
-                            const noResultsMessage =
-                                column.querySelector('.no-search-results');
+                            const noResultsMessage = column.querySelector('.no-search-results');
 
                             let visibleProjects = 0;
 
                             projectCards.forEach(function(card) {
 
-                                const searchText =
-                                    card.dataset.search || '';
+                                const searchText = card.dataset.search || '';
 
                                 if (searchText.includes(searchValue)) {
 
@@ -1135,7 +1132,6 @@
 
                         userName.textContent = milestone.user;
 
-
                         const date = document.createElement('div');
 
                         date.classList.add('milestone-date');
@@ -1159,20 +1155,16 @@
 
                         description.textContent = milestone.description;
 
-
                         milestoneItem.appendChild(header);
                         milestoneItem.appendChild(description);
 
                         if (milestone.user_id === currentUserId) {
 
-                            const deleteButton =
-                                document.createElement('button');
+                            const deleteButton = document.createElement('button');
 
                             deleteButton.type = 'button';
 
-                            deleteButton.classList.add(
-                                'milestone-delete-btn'
-                            );
+                            deleteButton.classList.add('milestone-delete-btn');
 
                             deleteButton.textContent = 'Delete';
 
@@ -1180,45 +1172,29 @@
                                 'click',
                                 async function() {
 
-                                    if (
-                                        !confirm(
-                                            'Delete this milestone comment?'
-                                        )
-                                    ) {
+                                    if (!confirm('Delete this milestone comment?')) {
                                         return;
                                     }
 
-                                    const deleteUrl =
-                                        milestoneDeleteUrl
-                                        .replace(
-                                            '__PROJECT__',
-                                            currentProject.id
-                                        )
-                                        .replace(
-                                            '__MILESTONE__',
-                                            milestone.id
-                                        );
+                                    const deleteUrl = milestoneDeleteUrl
+                                        .replace('__PROJECT__', currentProject.id)
+                                        .replace('__MILESTONE__', milestone.id);
 
                                     try {
 
-                                        const response = await fetch(
-                                            deleteUrl, {
-                                                method: 'DELETE',
+                                        const response = await fetch(deleteUrl, {
+                                            method: 'DELETE',
 
-                                                headers: {
-                                                    'Accept': 'application/json',
+                                            headers: {
+                                                'Accept': 'application/json',
 
-                                                    'X-CSRF-TOKEN': document.querySelector(
-                                                        'meta[name="csrf-token"]'
-                                                    ).content,
-                                                },
-                                            }
-                                        );
+                                                'X-CSRF-TOKEN': document.querySelector(
+                                                    'meta[name="csrf-token"]').content,
+                                            },
+                                        });
 
                                         if (!response.ok) {
-                                            throw new Error(
-                                                'Unable to delete milestone.'
-                                            );
+                                            throw new Error('Unable to delete milestone.');
                                         }
 
                                         milestoneItem.remove();
@@ -1230,219 +1206,182 @@
                                                 }
                                             );
 
-                                        if (
-                                            currentProject.milestones.length === 0
-                                        ) {
-                                            const emptyMessage =
-                                                document.createElement('div');
+                                        if (currentProject.milestones.length === 0) {
+                                            const emptyMessage = document.createElement('div');
 
-                                            emptyMessage.classList.add(
-                                                'milestone-empty'
-                                            );
+                                            emptyMessage.classList.add('milestone-empty');
 
-                                            emptyMessage.textContent =
-                                                'No milestone updates yet.';
+                                            emptyMessage.textContent = 'No milestone updates yet.';
 
-                                            modalProjectMilestones.appendChild(
-                                                emptyMessage
-                                            );
+                                            modalProjectMilestones.appendChild(emptyMessage);
                                         }
 
                                     } catch (error) {
 
                                         console.error(error);
 
-                                        alert(
-                                            'Unable to delete milestone comment.'
-                                        );
+                                        alert('Unable to delete milestone comment.');
 
                                     }
 
                                 }
                             );
 
-                            milestoneItem.appendChild(
-                                deleteButton
-                            );
+                            milestoneItem.appendChild(deleteButton);
                         }
 
-                        modalProjectMilestones.appendChild(
-                            milestoneItem
-                        );
+                        modalProjectMilestones.appendChild(milestoneItem);
 
 
                         // Automatically scroll to newest comment
 
-                        modalProjectMilestones.scrollTop =
-                            modalProjectMilestones.scrollHeight;
+                        modalProjectMilestones.scrollTop = modalProjectMilestones.scrollHeight;
                     }
 
                     projectCards.forEach(function(card) {
 
                             card.addEventListener('click', function() {
 
-                                    const projectId = card.dataset.projectId;
-                                    const project = projectData[projectId];
+                                const projectId = card.dataset.projectId;
+                                const project = projectData[projectId];
 
-                                    if (!project) {
-                                        return;
-                                    }
+                                if (!project) {
+                                    return;
+                                }
 
-                                    currentProject = project;
+                                currentProject = project;
 
-                                    milestoneForm.action = milestoneStoreUrl.replace('__PROJECT__', project.id);
+                                milestoneForm.action = milestoneStoreUrl.replace('__PROJECT__', project.id);
 
-                                    milestoneDescription.value = '';
-
-
-                                    // Project name
-                                    modalProjectName.textContent = project.name;
+                                milestoneDescription.value = '';
 
 
-                                    // Project ID
-                                    modalProjectId.textContent =
-                                        'PRJ-' +
-                                        String(project.id).padStart(4, '0');
+                                // Project name
+                                modalProjectName.textContent = project.name;
 
 
-                                    // Project status
-                                    modalProjectStatus.className = 'status-pill';
+                                // Project ID
+                                modalProjectId.textContent = 'PRJ-' + String(project.id).padStart(4, '0');
 
-                                    if (project.status === 'Not Started') {
+                                // Project status
+                                modalProjectStatus.className = 'status-pill';
 
-                                        modalProjectStatus.textContent = 'Not Started';
+                                if (project.status === 'Not Started') {
 
-                                        modalProjectStatus.classList.add('pill-not-started');
+                                    modalProjectStatus.textContent = 'Not Started';
 
-                                    } else if (project.status === 'Ongoing') {
+                                    modalProjectStatus.classList.add('pill-not-started');
 
-                                        modalProjectStatus.textContent =
-                                            'Ongoing';
+                                } else if (project.status === 'Ongoing') {
 
-                                        modalProjectStatus.classList.add(
-                                            'pill-ongoing'
-                                        );
+                                    modalProjectStatus.textContent =
+                                        'Ongoing';
 
-                                    } else if (project.status === 'Completed') {
+                                    modalProjectStatus.classList.add(
+                                        'pill-ongoing'
+                                    );
 
-                                        modalProjectStatus.textContent =
-                                            'Completed';
+                                } else if (project.status === 'Completed') {
 
-                                        modalProjectStatus.classList.add(
-                                            'pill-completed'
-                                        );
+                                    modalProjectStatus.textContent =
+                                        'Completed';
 
-                                    } else if (project.status === 'On Hold') {
+                                    modalProjectStatus.classList.add(
+                                        'pill-completed'
+                                    );
 
-                                        modalProjectStatus.textContent =
-                                            'On Hold';
+                                } else if (project.status === 'On Hold') {
 
-                                        modalProjectStatus.classList.add(
-                                            'pill-on-hold'
-                                        );
+                                    modalProjectStatus.textContent =
+                                        'On Hold';
 
-                                    }
+                                    modalProjectStatus.classList.add(
+                                        'pill-on-hold'
+                                    );
 
+                                }
 
-                                    // Created by
-                                    modalProjectCreator.textContent =
-                                        project.creator;
+                                // Created by
+                                modalProjectCreator.textContent =
+                                    project.creator;
 
+                                // Duration
+                                modalProjectDuration.textContent =
+                                    project.start_date +
+                                    ' - ' +
+                                    project.end_date;
 
-                                    // Duration
-                                    modalProjectDuration.textContent =
-                                        project.start_date +
-                                        ' - ' +
-                                        project.end_date;
+                                // Description
+                                modalProjectDescription.textContent =
+                                    project.description;
 
+                                // Developers
 
-                                    // Description
-                                    modalProjectDescription.textContent =
-                                        project.description;
+                                modalProjectDevelopers.innerHTML = '';
 
+                                if (project.developers && project.developers.length > 0) {
 
-                                    // Developers
+                                    project.developers.forEach(function(developer) {
 
-                                    modalProjectDevelopers.innerHTML = '';
+                                        const avatar = document.createElement('div');
 
-                                    if (project.developers.length > 0) {
+                                        avatar.classList.add('developer-avatar');
+                                        avatar.title = developer.name;
 
-                                        project.developers.forEach(function(developer) {
+                                        if (developer.photo) {
 
-                                            const avatar = document.createElement('div');
+                                            const image = document.createElement('img');
 
-                                            avatar.classList.add('developer-avatar');
-
-                                            avatar.title = developer.name;
-
-                                            if (developer.photo) {
-
-                                                const image = document.createElement('img');
-
-                                                image.src = developer.photo;
-
-                                                image.alt = developer.name;
-
-                                                avatar.appendChild(image);
-
-                                            } else {
-
-                                                const initials = developer.name
-                                                    .split(' ')
-                                                    .map(function(name) {
-                                                        return name.charAt(0);
-                                                    })
-                                                    .join('')
-                                                    .substring(0, 2)
-                                                    .toUpperCase();
-
-                                                avatar.textContent = initials;
-                                            }
-
-                                            modalProjectDevelopers.appendChild(avatar);
-                                        });
-
-                                        // Milestones
-
-                                        modalProjectMilestones.innerHTML = '';
-
-                                        if (
-                                            project.milestones &&
-                                            project.milestones.length > 0
-                                        ) {
-
-                                            project.milestones.forEach(
-                                                function(milestone) {
-
-                                                    addMilestoneToModal(
-                                                        milestone
-                                                    );
-
-                                                }
-                                            );
+                                            image.src = developer.photo;
+                                            image.alt = developer.name;
+                                            avatar.appendChild(image);
 
                                         } else {
 
-                                            const emptyMessage =
-                                                document.createElement('div');
+                                            const initials = developer.name
+                                                .split(' ')
+                                                .map(function(name) {
+                                                    return name.charAt(0);
+                                                })
+                                                .join('')
+                                                .substring(0, 2)
+                                                .toUpperCase();
 
-                                            emptyMessage.classList.add(
-                                                'milestone-empty'
-                                            );
-
-                                            emptyMessage.textContent =
-                                                'No milestone updates yet.';
-
-                                            modalProjectMilestones.appendChild(
-                                                emptyMessage
-                                            );
-
+                                            avatar.textContent = initials;
                                         }
 
-                                        // Open modal
-                                        modal.classList.add('active');
+                                        modalProjectDevelopers.appendChild(avatar);
                                     });
+                                }
+
+
+                                // Milestones
+
+                                modalProjectMilestones.innerHTML = '';
+
+                                if (project.milestones && project.milestones.length > 0) {
+
+                                    project.milestones.forEach(function(milestone) {
+
+                                        addMilestoneToModal(milestone);
+
+                                    });
+
+                                } else {
+
+                                    const emptyMessage = document.createElement('div');
+
+                                    emptyMessage.classList.add('milestone-empty');
+                                    emptyMessage.textContent = 'No milestone updates yet.';
+                                    modalProjectMilestones.appendChild(emptyMessage);
+                                }
+
+
+                                // Open modal
+
+                                modal.classList.add('active');
                             });
+                        });
 
                         milestoneDescription.addEventListener('keydown', function(event) {
 
@@ -1463,15 +1402,13 @@
 
                             event.preventDefault();
 
-                            const description =
-                                milestoneDescription.value.trim();
+                            const description = milestoneDescription.value.trim();
 
                             if (description === '') {
                                 return;
                             }
 
-                            const formData =
-                                new FormData(milestoneForm);
+                            const formData = new FormData(milestoneForm);
 
                             try {
 
@@ -1488,15 +1425,12 @@
                                 );
 
                                 if (!response.ok) {
-                                    throw new Error(
-                                        'Unable to post milestone.'
-                                    );
+                                    throw new Error('Unable to post milestone.');
                                 }
 
                                 const data = await response.json();
 
-                                const milestone =
-                                    data.milestone;
+                                const milestone = data.milestone;
 
                                 addMilestoneToModal(milestone);
 
@@ -1510,9 +1444,7 @@
 
                                 console.error(error);
 
-                                alert(
-                                    'Unable to post milestone update.'
-                                );
+                                alert('Unable to post milestone update.');
 
                             }
 
@@ -1521,27 +1453,21 @@
 
                         // Close modal
 
-                        closeModalButton.addEventListener(
-                            'click',
-                            function() {
+                        closeModalButton.addEventListener('click', function() {
+
+                            modal.classList.remove('active');
+
+                        });
+
+                        modal.addEventListener('click', function(event) {
+
+                            if (event.target === modal) {
 
                                 modal.classList.remove('active');
 
                             }
-                        );
 
-                        modal.addEventListener(
-                            'click',
-                            function(event) {
-
-                                if (event.target === modal) {
-
-                                    modal.classList.remove('active');
-
-                                }
-
-                            }
-                        );
+                        });
 
                     });
     </script>

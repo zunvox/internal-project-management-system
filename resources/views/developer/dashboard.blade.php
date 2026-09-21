@@ -13,12 +13,14 @@
     </style>
 
 </head>
-
 <body>
 
     @include('developer.partials.developer-topbar')
     @include('developer.partials.developer-nav')
 
-</body>
+    <div class="stage">
 
+    </div>
+
+</body>
 </html>

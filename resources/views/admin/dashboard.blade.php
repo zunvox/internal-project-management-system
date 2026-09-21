@@ -18,6 +18,10 @@
     @include('admin.partials.admin-topbar')
     @include('admin.partials.admin-nav')
 
+    <div class ="stage">
+        
+    </div>
+
 </body>
 
 </html>

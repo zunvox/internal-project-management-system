@@ -164,8 +164,8 @@
         /* ---------- Change Log ---------- */
 
         .change-log-card {
-            width: 62%;
-            max-width: 760px;
+            width: 90%;
+            max-width: 1400px;
             min-width: 560px;
             margin: 20px auto 0;
             background: white;

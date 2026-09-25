@@ -44,7 +44,7 @@
 
         .btn {
             border: none;
-            border-radius: 10px;
+            border-radius: 5px;
             font-size: 12px;
             font-weight: 500;
             cursor: pointer;

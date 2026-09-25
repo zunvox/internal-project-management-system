@@ -12,7 +12,7 @@
     <style>
         .page {
             width: 100%;
-            max-width: 1180px;
+            max-width: 1300px;
             margin: 0 auto;
             padding: 16px 20px 30px;
         }
@@ -30,6 +30,7 @@
             display: flex;
             flex-direction: column;
             gap: 18px;
+            margin-top: 35px;
         }
 
         .stat-card {
@@ -100,6 +101,7 @@
             line-height: 1.1;
             font-weight: 700;
             letter-spacing: 0.4px;
+            margin-top: 35px;
             color: #090909;
         }
 
@@ -143,6 +145,7 @@
         .projects-card {
             width: 100%;
             margin-bottom: 17px;
+            margin-top: 35px;
         }
 
         table {

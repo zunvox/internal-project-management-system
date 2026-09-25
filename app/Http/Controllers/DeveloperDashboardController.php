@@ -181,11 +181,7 @@ class DeveloperDashboardController extends Controller
                 : 0;
 
 
-        /*
-        |--------------------------------------------------------------------------
-        | Dashboard
-        |--------------------------------------------------------------------------
-        */
+        /*Dashboard*/
 
         return view(
             'developer.dashboard',

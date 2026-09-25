@@ -12,6 +12,7 @@ use App\Http\Controllers\DeveloperInvoiceController;
 use App\Http\Controllers\DeveloperProjectController;
 use App\Http\Controllers\DeveloperPaymentVoucherController;
 use App\Http\Controllers\DeveloperDashboardController;
+use App\Http\Controllers\Admin\AdminDashboardController;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 
@@ -74,9 +75,8 @@ Route::middleware('auth')->group(function () {
 
             /* Admin Dashboard */
 
-            Route::get('/dashboard', function () {
-                return view('admin.dashboard');
-            })->name('dashboard');
+            Route::get('/dashboard', [AdminDashboardController::class, 'index'])
+            ->name('dashboard');
 
             /* User Management */
 

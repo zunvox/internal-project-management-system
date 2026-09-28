@@ -90,7 +90,8 @@
         }
 
         .back-link:hover {
-            text-decoration: underline;
+            text-decoration: none;
+            color:#019BEF;
         }
 
         .btn-download {
@@ -962,9 +963,8 @@
 
 
 
-                    {{-- =========================================
-         APPROVED - VOUCHER EXISTS
-         ========================================= --}}
+                    {{--APPROVED - VOUCHER EXISTS --}}
+                    
                     @if ($invoice->status === 'Approved' && $invoice->paymentVoucher)
                         @php
                             $voucher = $invoice->paymentVoucher;

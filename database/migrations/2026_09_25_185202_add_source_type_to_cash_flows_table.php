@@ -6,25 +6,19 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
         Schema::table('cash_flows', function (Blueprint $table) {
-            $table->string('other_category', 100)
-                ->nullable()
-                ->after('flowcategory_id');
+            $table->string('source_type', 20)
+                ->default('manual')
+                ->after('logged_by');
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
         Schema::table('cash_flows', function (Blueprint $table) {
-            $table->dropColumn('other_category');
+            $table->dropColumn('source_type');
         });
     }
 };

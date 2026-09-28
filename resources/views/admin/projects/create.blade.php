@@ -271,11 +271,10 @@
             color: white;
             border: none;
             padding: 9px 22px;
-            border-radius: 999px;
+            border-radius: 5px;
             font-size: 13px;
             font-weight: 600;
             cursor: pointer;
-            box-shadow: 0 4px 14px rgba(43, 111, 255, 0.35);
         }
 
         .btn-confirm:hover {

@@ -90,7 +90,8 @@
         }
 
         .back-link:hover {
-            text-decoration: underline;
+            text-decoration: none;
+            color:#019BEF;
         }
 
         .btn-download {

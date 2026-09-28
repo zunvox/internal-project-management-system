@@ -10,22 +10,22 @@ return new class extends Migration
      * Run the migrations.
      */
     public function up(): void
-{
-    Schema::create('project_milestones', function (Blueprint $table) {
-        $table->id();
+    {
+        Schema::create('project_milestones', function (Blueprint $table) {
+            $table->id();
 
-        $table->foreignId('project_id')
-            ->constrained('projects')
-            ->cascadeOnDelete();
+            $table->foreignId('project_id')
+                ->constrained('projects')
+                ->cascadeOnDelete();
 
-        $table->foreignId('user_id')
-            ->constrained('users');
+            $table->foreignId('user_id')
+                ->constrained('users');
 
-        $table->text('description');
+            $table->text('description')->nullable();
 
-        $table->timestamps();
-    });
-}
+            $table->timestamps();
+        });
+    }
 
     public function down(): void
     {

@@ -6,20 +6,25 @@ use App\Http\Controllers\Controller;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
 class UserManagementController extends Controller
 {
-    /* Display the User Management list. */
-
+    /**
+     * Display the User Management list.
+     */
     public function index(Request $request): View
     {
         $query = User::query();
-        // dd($query);
 
-        /* Search (by name,email,phone */
+        /*
+        |--------------------------------------------------------------------------
+        | Search
+        |--------------------------------------------------------------------------
+        */
 
         if ($request->filled('search')) {
             $search = $request->search;
@@ -33,13 +38,21 @@ class UserManagementController extends Controller
             });
         }
 
-        /* Role filter */
+        /*
+        |--------------------------------------------------------------------------
+        | Role filter
+        |--------------------------------------------------------------------------
+        */
 
         if ($request->filled('role')) {
             $query->where('role', $request->role);
         }
 
-        /* Status filter */
+        /*
+        |--------------------------------------------------------------------------
+        | Status filter
+        |--------------------------------------------------------------------------
+        */
 
         if ($request->filled('status')) {
             $query->where('status', $request->status);
@@ -51,159 +64,400 @@ class UserManagementController extends Controller
             ->withQueryString();
 
         $allCount = User::count();
-
         $developerCount = User::where('role', 'Developer')->count();
-
         $adminCount = User::where('role', 'Admin')->count();
-
         $activeCount = User::where('status', 'Active')->count();
-
         $inactiveCount = User::where('status', 'Inactive')->count();
 
-        // var_dump($users);
-        // exit
-
-        return view('admin.admin-user.users-index', compact('users', 'allCount', 'developerCount', 'adminCount', 'activeCount', 'inactiveCount'));
+        return view(
+            'admin.admin-user.users-index',
+            compact(
+                'users',
+                'allCount',
+                'developerCount',
+                'adminCount',
+                'activeCount',
+                'inactiveCount'
+            )
+        );
     }
 
-    /* Display the Add User page. */
 
+    /**
+     * Display the Add User page.
+     */
     public function create(): View
     {
-        return view('admin.admin-user.create-user');
+        $nextAdminId =
+            $this->generateNextUserId('Admin');
+
+        $nextDeveloperId =
+            $this->generateNextUserId('Developer');
+
+        return view(
+            'admin.admin-user.create-user',
+            compact(
+                'nextAdminId',
+                'nextDeveloperId'
+            )
+        );
     }
 
-    /* Store a newly created user. */
 
+    /**
+     * Store a newly created user.
+     */
     public function store(Request $request): RedirectResponse
     {
         $validated = $request->validate([
-            'userid' => ['required', 'string', 'max:30', 'unique:users,userid'],
+            'fullname' => [
+                'required',
+                'string',
+                'max:130',
+            ],
 
-            'fullname' => ['required', 'string', 'max:130'],
+            'username' => [
+                'nullable',
+                'string',
+                'max:150',
+                'unique:users,username',
+            ],
 
-            'username' => ['nullable', 'string', 'max:150', 'unique:users,username'],
+            'email' => [
+                'required',
+                'email',
+                'max:255',
+                'unique:users,email',
+            ],
 
-            'email' => ['required', 'email', 'max:255', 'unique:users,email'],
+            'phone' => [
+                'nullable',
+                'string',
+                'max:30',
+            ],
 
-            'phone' => ['nullable', 'string', 'max:30'],
+            'address' => [
+                'nullable',
+                'string',
+                'max:1000',
+            ],
 
-            'address' => ['nullable', 'string', 'max:1000'],
+            'role' => [
+                'required',
+                Rule::in([
+                    'Admin',
+                    'Developer',
+                ]),
+            ],
 
-            'role' => ['required', Rule::in(['Admin', 'Developer'])],
+            'status' => [
+                'required',
+                Rule::in([
+                    'Active',
+                    'Inactive',
+                ]),
+            ],
 
-            'status' => ['required', Rule::in(['Active', 'Inactive'])],
+            'password' => [
+                'required',
+                'string',
+                'min:8',
+                'confirmed',
+            ],
 
-            'password' => ['required', 'string', 'min:8', 'confirmed'], ['password.confirmed' => 'The password confirmation does not match.'],
-
-            'profile_picture' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
+            'profile_picture' => [
+                'nullable',
+                'image',
+                'mimes:jpg,jpeg,png,webp',
+                'max:2048',
+            ],
         ]);
 
-        /* Profile picture */
+
+        /*
+        |--------------------------------------------------------------------------
+        | Auto-generate User ID
+        |--------------------------------------------------------------------------
+        */
+
+        $validated['userid'] =
+            $this->generateNextUserId(
+                $validated['role']
+            );
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Password
+        |--------------------------------------------------------------------------
+        */
+
+        $validated['password'] =
+            Hash::make(
+                $validated['password']
+            );
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Profile Picture
+        |--------------------------------------------------------------------------
+        */
 
         if ($request->hasFile('profile_picture')) {
-            $validated['profile_picture'] = $request->file('profile_picture')
-                ->store('profile-pictures', 'public');
+            $validated['profile_picture'] =
+                $request
+                    ->file('profile_picture')
+                    ->store(
+                        'profile-pictures',
+                        'public'
+                    );
         }
 
-        /* Create user */
+
+        /*
+        |--------------------------------------------------------------------------
+        | Create User
+        |--------------------------------------------------------------------------
+        */
 
         User::create($validated);
 
+
         return redirect()
-            ->route('admin.users.create')
-            ->with('success', 'User account created successfully.');
+            ->route('admin.users.index')
+            ->with(
+                'success',
+                'User account created successfully.'
+            );
     }
+
 
     /**
      * Display one user's details.
      */
     public function show(User $user): View
     {
-        return view('admin.admin-user.view-user', compact('user'));
+        return view(
+            'admin.admin-user.view-user',
+            compact('user')
+        );
     }
+
 
     /**
      * Display the Edit User page.
      */
     public function edit(User $user): View
     {
-        return view('admin.admin-user.edit-user', compact('user'));
+        return view(
+            'admin.admin-user.edit-user',
+            compact('user')
+        );
     }
 
-    /* Update an existing user. */
 
-    public function update(Request $request, User $user): RedirectResponse
+    /**
+     * Update an existing user.
+     */
+    public function update(
+        Request $request,
+        User $user
+    ): RedirectResponse
     {
         $validated = $request->validate([
-            'userid' => ['required', 'string', 'max:30'],
-
-            'fullname' => ['required', 'string', 'max:130'],
-
-            'username' => ['nullable', 'string', 'max:150'],
-
-            'email' => ['required', 'email', 'max:255',
-
-                Rule::unique('users', 'email')
-                    ->ignore($user->id),
+            'userid' => [
+                'required',
+                'string',
+                'max:30',
             ],
 
-            'phone' => ['nullable', 'string', 'max:30'],
-
-            'address' => ['nullable', 'string', 'max:1000'],
-
-            'role' => ['required', Rule::in(['Admin', 'Developer']),
+            'fullname' => [
+                'required',
+                'string',
+                'max:130',
             ],
 
-            'status' => ['required', Rule::in(['Active', 'Inactive']),
+            'username' => [
+                'nullable',
+                'string',
+                'max:150',
             ],
 
-            'password' => ['nullable', 'string', 'min:8', 'confirmed'],
+            'email' => [
+                'required',
+                'email',
+                'max:255',
 
-            'profile_picture' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
+                Rule::unique(
+                    'users',
+                    'email'
+                )->ignore($user->id),
+            ],
+
+            'phone' => [
+                'nullable',
+                'string',
+                'max:30',
+            ],
+
+            'address' => [
+                'nullable',
+                'string',
+                'max:1000',
+            ],
+
+            'role' => [
+                'required',
+                Rule::in([
+                    'Admin',
+                    'Developer',
+                ]),
+            ],
+
+            'status' => [
+                'required',
+                Rule::in([
+                    'Active',
+                    'Inactive',
+                ]),
+            ],
+
+            'password' => [
+                'nullable',
+                'string',
+                'min:8',
+                'confirmed',
+            ],
+
+            'profile_picture' => [
+                'nullable',
+                'image',
+                'mimes:jpg,jpeg,png,webp',
+                'max:2048',
+            ],
         ]);
 
-        /* Protect the currently logged-in Admin */
+
+        /*
+        |--------------------------------------------------------------------------
+        | Protect currently logged-in Admin
+        |--------------------------------------------------------------------------
+        */
 
         if ($request->user()->is($user)) {
             if ($validated['status'] === 'Inactive') {
                 return back()
                     ->withErrors([
-                        'status' => 'You cannot deactivate your own account.',
-                    ])->withInput();
+                        'status' =>
+                            'You cannot deactivate your own account.',
+                    ])
+                    ->withInput();
             }
 
             if ($validated['role'] !== 'Admin') {
                 return back()
                     ->withErrors([
-                        'role' => 'You cannot remove your own Admin role.',
-                    ])->withInput();
+                        'role' =>
+                            'You cannot remove your own Admin role.',
+                    ])
+                    ->withInput();
             }
         }
 
-        /* Password
-         If the password box is empty, keep the existing password.
+
+        /*
+        |--------------------------------------------------------------------------
+        | Keep existing password if empty
+        |--------------------------------------------------------------------------
         */
 
         if (empty($validated['password'])) {
             unset($validated['password']);
+        } else {
+            $validated['password'] =
+                Hash::make(
+                    $validated['password']
+                );
         }
 
-        /* Replace profile picture */
+
+        /*
+        |--------------------------------------------------------------------------
+        | Replace profile picture
+        |--------------------------------------------------------------------------
+        */
 
         if ($request->hasFile('profile_picture')) {
-            if ($user->profile_picture && Storage::disk('public')->exists($user->profile_picture)) {
-                Storage::disk('public')->delete($user->profile_picture);
+            if (
+                $user->profile_picture &&
+                Storage::disk('public')
+                    ->exists($user->profile_picture)
+            ) {
+                Storage::disk('public')
+                    ->delete($user->profile_picture);
             }
 
-            $validated['profile_picture'] = $request->file('profile_picture')
-                ->store('profile-pictures', 'public');
+            $validated['profile_picture'] =
+                $request
+                    ->file('profile_picture')
+                    ->store(
+                        'profile-pictures',
+                        'public'
+                    );
         }
+
 
         $user->update($validated);
 
+
         return redirect()
-            ->route('admin.users.show', $user)
-            ->with('success', 'User information updated successfully.');
+            ->route(
+                'admin.users.show',
+                $user
+            )
+            ->with(
+                'success',
+                'User information updated successfully.'
+            );
+    }
+
+
+    /**
+     * Generate the next Admin/Developer ID.
+     */
+    private function generateNextUserId(
+        string $role
+    ): string {
+        $prefix =
+            $role === 'Admin'
+                ? 'ADM'
+                : 'DEV';
+
+        $lastUser =
+            User::where(
+                'userid',
+                'like',
+                $prefix . '-%'
+            )
+                ->orderByRaw(
+                    "CAST(SUBSTRING(userid, 5) AS UNSIGNED) DESC"
+                )
+                ->first();
+
+        $nextNumber =
+            $lastUser
+                ? ((int) substr(
+                    $lastUser->userid,
+                    4
+                )) + 1
+                : 1;
+
+        return $prefix . '-' . str_pad(
+            $nextNumber,
+            4,
+            '0',
+            STR_PAD_LEFT
+        );
     }
 }

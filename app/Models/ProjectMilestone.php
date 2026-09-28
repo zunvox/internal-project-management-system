@@ -11,6 +11,8 @@ class ProjectMilestone extends Model
         'project_id',
         'user_id',
         'description',
+        'attachment_path',
+        'attachment_name',
     ];
 
     public function project(): BelongsTo

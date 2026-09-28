@@ -311,7 +311,7 @@
                             <label for="dev_id"
                                 id="user-id-label">{{ $user->role === 'Admin' ? 'Admin ID' : 'Developer ID' }}</label>
                             <input id="dev_id" name="userid" type="text"
-                                value="{{ old('userid', $user->userid) }}">
+                                value="{{ old('userid', $user->userid) }}" disabled>
                         </div>
 
                         <div class="form-field field-email">

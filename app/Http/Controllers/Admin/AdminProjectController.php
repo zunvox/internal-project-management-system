@@ -10,6 +10,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
+use Illuminate\Support\Facades\Storage;
 
 class AdminProjectController extends Controller
 {
@@ -166,16 +167,56 @@ class AdminProjectController extends Controller
 
         $validated = $request->validate([
             'description' => [
-                'required',
+                'nullable',
                 'string',
                 'max:2000',
             ],
+
+            'attachment' => [
+                'nullable',
+                'file',
+                'mimes:pdf,jpg,jpeg,png,doc,docx,xls,xlsx,zip',
+                'max:10240',
+            ],
         ]);
+
+        if (
+            empty($validated['description']) &&
+            !$request->hasFile('attachment')
+        ) {
+            return response()->json([
+                'message' => 'Please enter a milestone update or attach a file.',
+            ], 422);
+        }
+
+        $attachmentPath = null;
+        $attachmentName = null;
+
+        if ($request->hasFile('attachment')) {
+            $file = $request->file('attachment');
+
+            $attachmentName =
+                $file->getClientOriginalName();
+
+            $attachmentPath =
+                $file->store(
+                    'milestone-attachments',
+                    'public'
+                );
+        }
 
         $milestone = ProjectMilestone::create([
             'project_id' => $project->id,
             'user_id' => $user->id,
-            'description' => $validated['description'],
+
+            'description' =>
+                $validated['description'] ?? null,
+
+            'attachment_path' =>
+                $attachmentPath,
+
+            'attachment_name' =>
+                $attachmentName,
         ]);
 
         $milestone->load('user');
@@ -185,15 +226,31 @@ class AdminProjectController extends Controller
 
             'milestone' => [
                 'id' => $milestone->id,
-                'user_id' => $milestone->user_id,
-                'description' => $milestone->description,
 
-                'user' => $milestone->user?->fullname
+                'user_id' =>
+                    $milestone->user_id,
+
+                'description' =>
+                    $milestone->description,
+
+                'attachment_name' =>
+                    $milestone->attachment_name,
+
+                'attachment_url' =>
+                    $milestone->attachment_path
+                        ? asset(
+                            'storage/' .
+                            $milestone->attachment_path
+                        )
+                        : null,
+
+                'user' =>
+                    $milestone->user?->fullname
                     ?? 'Unknown User',
 
-                'created_at' => $milestone->created_at->format(
-                    'h:i A'
-                ),
+                'created_at' =>
+                    $milestone->created_at
+                        ->format('h:i A'),
             ],
         ]);
     }
@@ -206,6 +263,19 @@ class AdminProjectController extends Controller
             $milestone->project_id == $project->id,
             404
         );
+
+        if (
+            $milestone->attachment_path &&
+            Storage::disk('public')
+                ->exists(
+                    $milestone->attachment_path
+                )
+        ) {
+            Storage::disk('public')
+                ->delete(
+                    $milestone->attachment_path
+                );
+        }
 
         $milestone->delete();
 

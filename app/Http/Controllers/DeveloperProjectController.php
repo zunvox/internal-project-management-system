@@ -6,6 +6,7 @@ use App\Models\Project;
 use App\Models\ProjectMilestone;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
+use Illuminate\Support\Facades\Storage;
 
 class DeveloperProjectController extends Controller
 {
@@ -39,7 +40,7 @@ class DeveloperProjectController extends Controller
                     'start_date' => $project->start_date?->format('d F Y'),
                     'end_date' => $project->end_date?->format('d F Y'),
                     'developers' => $project->assignedUsers
-                        ->map(function ($developer) {
+                         ->map(function ($developer) {
                             return [
                                 'name' => $developer->fullname,
                                 'photo' => $developer->profile_picture
@@ -59,7 +60,10 @@ class DeveloperProjectController extends Controller
                                 'user' => $milestone->user?->fullname ?? 'Unknown Developer',
                                 'user_photo' => $milestone->user?->profile_picture ? asset('storage/' . $milestone->user->profile_picture) : null,
                                 'created_at' => $milestone->created_at->format('d F Y, h:i A'),
+                                'attachment_name' => $milestone->attachment_name,
+                                'attachment_url' => $milestone->attachment_path ? asset('storage/' . $milestone->attachment_path) : null,
                             ];
+                            
                         })
                         ->values()
                         ->all(),
@@ -82,25 +86,79 @@ class DeveloperProjectController extends Controller
     ) {
         $user = auth()->user();
 
-        $isAssigned = $project->assignedUsers()
-            ->where('users.id', $user->id)
-            ->exists();
+        $isAssigned =
+            $project->assignedUsers()
+                ->where(
+                    'users.id',
+                    $user->id
+                )
+                ->exists();
 
-        abort_unless($isAssigned, 403);
+        abort_unless(
+            $isAssigned,
+            403
+        );
 
         $validated = $request->validate([
             'description' => [
-                'required',
+                'nullable',
                 'string',
                 'max:2000',
             ],
+
+            'attachment' => [
+                'nullable',
+                'file',
+                'mimes:pdf,jpg,jpeg,png,doc,docx,xls,xlsx,zip',
+                'max:10240',
+            ],
         ]);
 
-        $milestone = ProjectMilestone::create([
-            'project_id' => $project->id,
-            'user_id' => $user->id,
-            'description' => $validated['description'],
-        ]);
+        if (
+            empty($validated['description']) &&
+            !$request->hasFile('attachment')
+        ) {
+            return response()->json([
+                'message' =>
+                    'Please enter a milestone update or attach a file.',
+            ], 422);
+        }
+
+        $attachmentPath = null;
+        $attachmentName = null;
+
+        if ($request->hasFile('attachment')) {
+            $file =
+                $request->file('attachment');
+
+            $attachmentName =
+                $file->getClientOriginalName();
+
+            $attachmentPath =
+                $file->store(
+                    'milestone-attachments',
+                    'public'
+                );
+        }
+
+        $milestone =
+            ProjectMilestone::create([
+                'project_id' =>
+                    $project->id,
+
+                'user_id' =>
+                    $user->id,
+
+                'description' =>
+                    $validated['description']
+                    ?? null,
+
+                'attachment_path' =>
+                    $attachmentPath,
+
+                'attachment_name' =>
+                    $attachmentName,
+            ]);
 
         $milestone->load('user');
 
@@ -108,12 +166,44 @@ class DeveloperProjectController extends Controller
             'success' => true,
 
             'milestone' => [
-                'id' => $milestone->id,
-                'user_id' => $milestone->user_id,
-                'description' => $milestone->description,
-                'user' => $milestone->user?->fullname ?? 'Unknown Developer',
-                'user_photo' => $milestone->user?->profile_picture ? asset('storage/' . $milestone->user->profile_picture) : null,
-                'created_at' => $milestone->created_at->format('d F Y, h:i A'),
+                'id' =>
+                    $milestone->id,
+
+                'user_id' =>
+                    $milestone->user_id,
+
+                'description' =>
+                    $milestone->description,
+
+                'attachment_name' =>
+                    $milestone->attachment_name,
+
+                'attachment_url' =>
+                    $milestone->attachment_path
+                        ? asset(
+                            'storage/' .
+                            $milestone->attachment_path
+                        )
+                        : null,
+
+                'user' =>
+                    $milestone->user?->fullname
+                    ?? 'Unknown Developer',
+
+                'user_photo' =>
+                    $milestone->user?->profile_picture
+                        ? asset(
+                            'storage/' .
+                            $milestone->user
+                                ->profile_picture
+                        )
+                        : null,
+
+                'created_at' =>
+                    $milestone->created_at
+                        ->format(
+                            'd F Y, h:i A'
+                        ),
             ],
         ]);
     }

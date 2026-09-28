@@ -11,13 +11,10 @@ class CashFlowCategorySeeder extends Seeder
     {
         $categories = [
 
-            // Cash In
+            /*Cash In*/
+
             [
                 'category_name' => 'Client Payment',
-                'cash_flow_type' => 'Cash In',
-            ],
-            [
-                'category_name' => 'Project Payment',
                 'cash_flow_type' => 'Cash In',
             ],
             [
@@ -33,7 +30,13 @@ class CashFlowCategorySeeder extends Seeder
                 'cash_flow_type' => 'Cash In',
             ],
 
-            // Cash Out
+
+            /*Cash Out*/
+
+            [
+                'category_name' => 'Project Payment',
+                'cash_flow_type' => 'Cash Out',
+            ],
             [
                 'category_name' => 'Staff Claims',
                 'cash_flow_type' => 'Cash Out',
@@ -66,21 +69,21 @@ class CashFlowCategorySeeder extends Seeder
                 'category_name' => 'Other Expense',
                 'cash_flow_type' => 'Cash Out',
             ],
-
         ];
 
         foreach ($categories as $category) {
-
             CashFlowCategory::updateOrCreate(
                 [
-                    'category_name' => $category['category_name'],
-                    'cash_flow_type' => $category['cash_flow_type'],
+                    'category_name' =>
+                        $category['category_name'],
+
+                    'cash_flow_type' =>
+                        $category['cash_flow_type'],
                 ],
                 [
                     'is_active' => true,
                 ]
             );
-
         }
     }
 }

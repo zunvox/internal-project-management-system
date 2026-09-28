@@ -13,6 +13,7 @@ class CashFlow extends Model
     protected $fillable = [
         'logged_by',
         'flowcategory_id',
+        'source_type',
         'other_category',
         'transaction_code',
         'type',

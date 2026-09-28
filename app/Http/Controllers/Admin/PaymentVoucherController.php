@@ -47,9 +47,7 @@ class PaymentVoucherController extends Controller
                 'Rejected',
             ]);
 
-        /*
-        * Counts include both invoices and claims.
-        */
+        /*Counts include both invoices and claims.*/
         $counts = [
             'all' => (clone $invoiceQuery)->count()
                 +
@@ -80,9 +78,7 @@ class PaymentVoucherController extends Controller
                     ->count(),
         ];
 
-        /*
-        * Apply selected status to invoices.
-        */
+        /*Apply selected status to invoices.*/
         $invoices = $invoiceQuery
             ->when($status, function ($query, $status) {
                 if (in_array($status, [
@@ -96,9 +92,7 @@ class PaymentVoucherController extends Controller
             ->latest('submitted_at')
             ->get();
 
-        /*
-        * Apply selected status to claims.
-        */
+        /*Apply selected status to claims.*/
         $claims = $claimQuery
             ->when($status, function ($query, $status) {
                 if (in_array($status, [
@@ -202,6 +196,9 @@ class PaymentVoucherController extends Controller
 
                 'flowcategory_id' =>
                     $claimCategory->id,
+
+                'source_type' => 
+                    'claim',
 
                 'transaction_code' =>
                     $this->generateCashFlowCode(),
@@ -388,6 +385,9 @@ class PaymentVoucherController extends Controller
 
                 'flowcategory_id' =>
                     $invoiceCategory->id,
+                
+                'source_type' =>
+                    'invoice',
 
                 'transaction_code' =>
                     $this->generateCashFlowCode(),

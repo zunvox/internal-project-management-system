@@ -346,7 +346,7 @@
     @include('admin.partials.admin-topbar')
     @include('admin.partials.admin-nav')
 
-    <div c;ass="stage">
+    <div class="stage">
         <div class="page">
 
             <div class="page-header">

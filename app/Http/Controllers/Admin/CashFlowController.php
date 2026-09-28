@@ -156,6 +156,8 @@ class CashFlowController extends Controller
 
             'flowcategory_id' => $validated['flowcategory_id'],
 
+            'source_type' => 'manual',
+
             'transaction_code' => $this->generateTransactionCode(),
 
             'type' => $validated['type'],
@@ -251,17 +253,34 @@ class CashFlowController extends Controller
 
     public function edit(CashFlow $cashFlow): View
     {
+        abort_if(
+            $cashFlow->source_type !== 'manual',
+            403,
+            'Automatically recorded transactions cannot be edited.'
+        );
+
         $categories = CashFlowCategory::where('is_active', true)
             ->orderBy('cash_flow_type')
             ->orderBy('category_name')
             ->get();
 
-        return view('admin.cash-flows.edit', compact('cashFlow', 'categories')
+        return view(
+            'admin.cash-flows.edit',
+            compact(
+                'cashFlow',
+                'categories'
+            )
         );
     }
 
     public function update(Request $request, CashFlow $cashFlow)
     {
+        abort_if(
+            $cashFlow->source_type !== 'manual',
+            403,
+            'Automatically recorded transactions cannot be edited.'
+        );
+        
         $validated = $request->validate([
             'type' => [
                 'required',

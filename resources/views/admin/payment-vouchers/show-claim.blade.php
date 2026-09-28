@@ -66,6 +66,7 @@
 
         .back-link:hover {
             color: #2B6FFF;
+            text-decoration: none;
         }
 
         .btn-download-page {

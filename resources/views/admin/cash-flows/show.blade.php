@@ -526,15 +526,23 @@
 
                     <div class="detail-actions">
 
-                        <a href="{{ route('admin.cash-flows.edit', $cashFlow) }}"
-                            class="action-button edit-button">Edit Record</a>
+                        @if ($cashFlow->source_type === 'manual')
+                            <a href="{{ route('admin.cash-flows.edit', $cashFlow) }}"
+                                class="action-button edit-button">
+                                Edit Record
+                            </a>
+                        @endif
+
                         <form action="{{ route('admin.cash-flows.destroy', $cashFlow) }}" method="POST"
                             class="delete-form">
 
                             @csrf
                             @method('DELETE')
 
-                            <button type="submit" class="action-button delete-button">Delete Record</button>
+                            <button type="submit" class="action-button delete-button">
+                                Delete Record
+                            </button>
+
                         </form>
 
                     </div>
@@ -551,15 +559,11 @@
 
                     @forelse ($cashFlow->changeLogs as $log)
 
-                    @php
-                        $previousLog = $cashFlow->changeLogs
-                            ->where('id', '<', $log->id)
-                            ->sortByDesc('id')
-                            ->first();
+                        @php
+                            $previousLog = $cashFlow->changeLogs->where('id', '<', $log->id)->sortByDesc('id')->first();
 
-                        $previousSnapshot =
-                            $previousLog?->snapshot ?? [];
-                    @endphp
+                            $previousSnapshot = $previousLog?->snapshot ?? [];
+                        @endphp
 
                         <div class="change-log-item" data-log-id="{{ $log->id }}">
 
@@ -607,31 +611,19 @@
                                                 Category
                                             </div>
 
-                                            <div class="detail-value
-                                                {{
-                                                    $previousLog
-                                                    &&
-                                                    (
-                                                        ($previousSnapshot['category'] ?? null)
-                                                        !==
-                                                        ($log->snapshot['category'] ?? null)
-
-                                                        ||
-
-                                                        ($previousSnapshot['other_category'] ?? null)
-                                                        !==
-                                                        ($log->snapshot['other_category'] ?? null)
-                                                    )
-                                                        ? 'changed-value'
-                                                        : ''
-                                                }}"
-                                            >{{ $log->snapshot['category'] ?? '-' }}
+                                            <div
+                                                class="detail-value
+                                                {{ $previousLog &&
+                                                (($previousSnapshot['category'] ?? null) !== ($log->snapshot['category'] ?? null) ||
+                                                    ($previousSnapshot['other_category'] ?? null) !== ($log->snapshot['other_category'] ?? null))
+                                                    ? 'changed-value'
+                                                    : '' }}">
+                                                {{ $log->snapshot['category'] ?? '-' }}
                                             </div>
 
                                         </div>
 
                                         @if (!empty($log->snapshot['other_category']))
-
                                             <div class="detail-item">
 
                                                 <div class="detail-label">
@@ -640,38 +632,25 @@
 
                                                 <div
                                                     class="detail-value
-                                                    {{
-                                                        $previousLog
-                                                        &&
-                                                        ($previousSnapshot['other_category'] ?? null)
-                                                        !==
-                                                        ($log->snapshot['other_category'] ?? null)
-                                                            ? 'changed-value'
-                                                            : ''
-                                                    }}"
-                                                >
+                                                    {{ $previousLog && ($previousSnapshot['other_category'] ?? null) !== ($log->snapshot['other_category'] ?? null)
+                                                        ? 'changed-value'
+                                                        : '' }}">
                                                     {{ $log->snapshot['other_category'] }}
                                                 </div>
 
                                             </div>
-
                                         @endif
 
                                         <div class="detail-item detail-full">
 
                                             <div class="detail-label">Subject</div>
 
-                                            <div class="detail-value
-                                                {{
-                                                    $previousLog
-                                                    &&
-                                                    ($previousSnapshot['subject'] ?? null)
-                                                    !==
-                                                    ($log->snapshot['subject'] ?? null)
-                                                        ? 'changed-value'
-                                                        : ''
-                                                }}"
-                                            >{{ $log->snapshot['subject'] ?? '-' }}
+                                            <div
+                                                class="detail-value
+                                                {{ $previousLog && ($previousSnapshot['subject'] ?? null) !== ($log->snapshot['subject'] ?? null)
+                                                    ? 'changed-value'
+                                                    : '' }}">
+                                                {{ $log->snapshot['subject'] ?? '-' }}
                                             </div>
 
                                         </div>
@@ -681,17 +660,12 @@
 
                                             <div class="detail-label">Type</div>
 
-                                            <div class="detail-value
-                                                {{
-                                                    $previousLog
-                                                    &&
-                                                    ($previousSnapshot['type'] ?? null)
-                                                    !==
-                                                    ($log->snapshot['type'] ?? null)
-                                                        ? 'changed-value'
-                                                        : ''
-                                                }}"
-                                            >{{ $log->snapshot['type'] ?? '-' }}
+                                            <div
+                                                class="detail-value
+                                                {{ $previousLog && ($previousSnapshot['type'] ?? null) !== ($log->snapshot['type'] ?? null)
+                                                    ? 'changed-value'
+                                                    : '' }}">
+                                                {{ $log->snapshot['type'] ?? '-' }}
                                             </div>
 
                                         </div>
@@ -701,29 +675,16 @@
 
                                             <div class="detail-label">Date</div>
 
-                                            <div class="detail-value
-                                                {{
-                                                    $previousLog
-                                                    &&
-                                                    ($previousSnapshot['transaction_date'] ?? null)
-                                                    !==
-                                                    ($log->snapshot['transaction_date'] ?? null)
-                                                        ? 'changed-value'
-                                                        : ''
-                                                }}"
-                                            >
+                                            <div
+                                                class="detail-value
+                                                {{ $previousLog &&
+                                                ($previousSnapshot['transaction_date'] ?? null) !== ($log->snapshot['transaction_date'] ?? null)
+                                                    ? 'changed-value'
+                                                    : '' }}">
                                                 @if (!empty($log->snapshot['transaction_date']))
-
-                                                    {{
-                                                        \Carbon\Carbon::parse(
-                                                            $log->snapshot['transaction_date']
-                                                        )->format('j F Y')
-                                                    }}
-
+                                                    {{ \Carbon\Carbon::parse($log->snapshot['transaction_date'])->format('j F Y') }}
                                                 @else
-
                                                     -
-
                                                 @endif
                                             </div>
 
@@ -734,23 +695,13 @@
 
                                             <div class="detail-label">Amount</div>
 
-                                            <div class="detail-value
-                                                {{
-                                                    $previousLog
-                                                    &&
-                                                    ($previousSnapshot['amount'] ?? null)
-                                                    !=
-                                                    ($log->snapshot['amount'] ?? null)
-                                                        ? 'changed-value'
-                                                        : ''
-                                                }}"
-                                            >
-                                                RM {{
-                                                    number_format(
-                                                        $log->snapshot['amount'] ?? 0,
-                                                        2
-                                                    )
-                                                }}
+                                            <div
+                                                class="detail-value
+                                                {{ $previousLog && ($previousSnapshot['amount'] ?? null) != ($log->snapshot['amount'] ?? null)
+                                                    ? 'changed-value'
+                                                    : '' }}">
+                                                RM
+                                                {{ number_format($log->snapshot['amount'] ?? 0, 2) }}
                                             </div>
 
                                         </div>
@@ -769,17 +720,11 @@
 
                                             <div class="detail-label">Description</div>
 
-                                            <div class="detail-value
-                                                {{
-                                                    $previousLog
-                                                    &&
-                                                    ($previousSnapshot['description'] ?? null)
-                                                    !==
-                                                    ($log->snapshot['description'] ?? null)
-                                                        ? 'changed-value'
-                                                        : ''
-                                                }}"
-                                            >
+                                            <div
+                                                class="detail-value
+                                                {{ $previousLog && ($previousSnapshot['description'] ?? null) !== ($log->snapshot['description'] ?? null)
+                                                    ? 'changed-value'
+                                                    : '' }}">
                                                 {{ $log->snapshot['description'] ?? '-' }}
                                             </div>
 
@@ -823,18 +768,15 @@
 
         document
             .querySelectorAll('.change-log-item')
-            .forEach(function(item) 
-            {
+            .forEach(function(item) {
                 item.addEventListener(
                     'click',
-                    function() 
-                    {
+                    function() {
                         const logId = item.dataset.logId;
 
                         const detail = document.getElementById('change-log-detail-' + logId);
 
-                        if (!detail) 
-                        {
+                        if (!detail) {
                             return;
                         }
 

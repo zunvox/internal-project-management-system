@@ -1074,6 +1074,67 @@
 
             calculateInvoice();
 
+            const invoiceForm =
+                document.getElementById('invoice-form');
+
+            const submitButtons =
+                invoiceForm.querySelectorAll(
+                    'button[type="submit"]'
+                );
+
+            let isSubmitting = false;
+            let selectedStatus = null;
+
+            submitButtons.forEach(
+                function(button) {
+                    button.addEventListener(
+                        'click',
+                        function() {
+                            selectedStatus =
+                                button.value;
+                        }
+                    );
+                }
+            );
+
+            invoiceForm.addEventListener(
+                'submit',
+                function(event) {
+                    if (isSubmitting) {
+                        event.preventDefault();
+                        return;
+                    }
+
+                    isSubmitting = true;
+
+                    if (selectedStatus) {
+                        const statusInput =
+                            document.createElement(
+                                'input'
+                            );
+
+                        statusInput.type =
+                            'hidden';
+
+                        statusInput.name =
+                            'status';
+
+                        statusInput.value =
+                            selectedStatus;
+
+                        invoiceForm.appendChild(
+                            statusInput
+                        );
+                    }
+
+                    submitButtons.forEach(
+                        function(button) {
+                            button.disabled = true;
+                        }
+                    );
+                }
+            );
+
         });
     </script>
 

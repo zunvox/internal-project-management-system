@@ -265,6 +265,17 @@
             justify-content: center;
         }
 
+        .field-error {
+            margin-top: 6px;
+            font-size: 13px;
+            line-height: 1.3;
+            color: #ff3b30;
+        }
+
+        .input-error {
+            border-color: #ff3b30 !important;
+        }
+
         .btn {
             padding: 10px 38px;
             border-radius: 10px;
@@ -354,9 +365,13 @@
                         </div>
 
                         <div class="form-field field-user-id">
-                            <label for="dev_id" id="user-id-label">
-                                {{ old('role') === 'Admin' ? 'Admin ID' : 'Developer ID' }} </label>
-                            <input id="dev_id" name="userid" type="text" value="{{ old('userid') }}" required>
+                            <label for="userid-preview" id="user-id-label">
+                                {{ old('role', 'Developer') === 'Admin' ? 'Admin ID' : 'Developer ID' }}
+                            </label>
+
+                            <input id="userid-preview" type="text"
+                                value="{{ old('role', 'Developer') === 'Admin' ? $nextAdminId : $nextDeveloperId }}"
+                                readonly disabled>
                         </div>
 
                         <div class="form-field field-username">
@@ -409,19 +424,30 @@
                             <textarea id="address" name="address">{{ old('address') }}</textarea>
                         </div>
 
-                        <div class="form-field field-password-confirmation">
-                            <label for="password_confirmation">Confirm Password</label>
+                        <div class="form-field">
+                            <label for="password_confirmation">
+                                Confirm Password
+                            </label>
+
                             <div class="password-wrapper">
                                 <input id="password_confirmation" name="password_confirmation" type="password"
-                                    autocomplete="new-password" required>
+                                    autocomplete="new-password">
+
                                 <button type="button" class="password-toggle" data-target="password_confirmation"
-                                    aria-label="Show password">👁</button>
+                                    aria-label="Show password">
+                                    👁
+                                </button>
+                            </div>
+
+                            <div id="password-match-error" class="field-error" style="display: none;">
+                                Passwords do not match.
                             </div>
 
                             @error('password')
-                                <span class="field-error">{{ $message }}</span>
+                                <div class="field-error">
+                                    {{ $message }}
+                                </div>
                             @enderror
-
                         </div>
 
                         <div class="form-actions">
@@ -437,11 +463,10 @@
     <script>
         const roleSelect = document.getElementById('role');
         const userIdLabel = document.getElementById('user-id-label');
+        const userIdPreview = document.getElementById('userid-preview');
         const createUserForm = document.getElementById('create-user-form');
         const passwordToggleButtons = document.querySelectorAll('.password-toggle');
-
         const fullnameInput = document.getElementById('full_name');
-        const useridInput = document.getElementById('dev_id');
         const emailInput = document.getElementById('email');
         const usernameInput = document.getElementById('username');
         const phoneInput = document.getElementById('phone');
@@ -454,71 +479,242 @@
         const summaryPhone = document.getElementById('summary-phone');
         const summaryEmail = document.getElementById('summary-email');
         const summaryAddress = document.getElementById('summary-address');
+        const nextAdminId = @json($nextAdminId);
+        const nextDeveloperId = @json($nextDeveloperId);
 
-        roleSelect.addEventListener('change', function() {
-            if (this.value === 'Admin') {
+
+        /*Update ID + role preview*/
+
+        function updateRolePreview() {
+            if (roleSelect.value === 'Admin') {
                 userIdLabel.textContent = 'Admin ID';
+                userIdPreview.value = nextAdminId;
+
+                summaryId.textContent = nextAdminId;
                 summaryRole.textContent = 'Admin';
             } else {
                 userIdLabel.textContent = 'Developer ID';
+                userIdPreview.value = nextDeveloperId;
+
+                summaryId.textContent = nextDeveloperId;
                 summaryRole.textContent = 'Developer';
             }
-        });
+        }
 
-        createUserForm.addEventListener('submit', function(event) {
-            const confirmed = confirm("Are you sure you want to create this user?");
 
-            if (!confirmed) {
-                event.preventDefault();
-            }
-        });
+        roleSelect.addEventListener('change', updateRolePreview);
+
+
+        /*Full Name*/
 
         fullnameInput.addEventListener('input', function() {
-            summaryFullname.textContent = ': ' + (this.value || '-');
+            summaryFullname.textContent =
+                ': ' + (this.value || '-');
         });
 
-        useridInput.addEventListener('input', function() {
-            summaryId.textContent = this.value || 'Developer ID';
-        });
+
+        /*Phone*/
 
         phoneInput.addEventListener('input', function() {
-            summaryPhone.textContent = ': ' + (this.value || '-');
+            summaryPhone.textContent =
+                ': ' + (this.value || '-');
         });
+
+
+        /*Email*/
 
         emailInput.addEventListener('input', function() {
-            summaryEmail.textContent = ': ' + (this.value || '-');
+            summaryEmail.textContent =
+                ': ' + (this.value || '-');
         });
 
+
+        /*Address*/
+
         addressInput.addEventListener('input', function() {
-            summaryAddress.textContent = ': ' + (this.value || '-');
+            summaryAddress.textContent =
+                ': ' + (this.value || '-');
         });
+
+
+        /* Username + Avatar*/
 
         usernameInput.addEventListener('input', function() {
             const username = this.value.trim();
 
-            summaryName.textContent = username || 'Username';
+            summaryName.textContent =
+                username || 'Username';
 
             if (username) {
-                summaryAvatar.textContent = username.charAt(0).toUpperCase();
+                summaryAvatar.textContent =
+                    username.charAt(0).toUpperCase();
             } else {
                 summaryAvatar.textContent = '?';
             }
         });
 
+
+        /*Password Preview Toggle*/
+
         passwordToggleButtons.forEach(function(button) {
             button.addEventListener('click', function() {
+
                 const targetId = this.dataset.target;
-                const passwordInput = document.getElementById(targetId);
+                const passwordInput =
+                    document.getElementById(targetId);
 
                 if (passwordInput.type === 'password') {
+
                     passwordInput.type = 'text';
-                    this.setAttribute('aria-label', 'Hide password');
+
+                    this.setAttribute(
+                        'aria-label',
+                        'Hide password'
+                    );
+
                 } else {
+
                     passwordInput.type = 'password';
-                    this.setAttribute('aria-label', 'Show password');
+
+                    this.setAttribute(
+                        'aria-label',
+                        'Show password'
+                    );
                 }
             });
         });
+
+
+        /*Confirmation*/
+
+        const passwordInput = document.getElementById('password');
+        const passwordConfirmationInput = document.getElementById('password_confirmation');
+        const passwordMatchError = document.getElementById('password-match-error');
+
+
+        createUserForm.addEventListener(
+            'submit',
+            function(event) {
+
+                /*Check passwords first*/
+
+                if (
+                    passwordInput.value !==
+                    passwordConfirmationInput.value
+                ) {
+                    event.preventDefault();
+
+                    passwordMatchError.style.display = 'block';
+
+                    passwordConfirmationInput.classList.add(
+                        'input-error'
+                    );
+
+                    passwordConfirmationInput.focus();
+
+                    return;
+                }
+
+
+                /*Passwords match - remove warning*/
+
+                passwordMatchError.style.display = 'none';
+
+                passwordConfirmationInput.classList.remove(
+                    'input-error'
+                );
+
+
+                /*Ask for confirmation only after validation passes*/
+
+                const confirmed = confirm(
+                    'Are you sure you want to create this user?'
+                );
+
+                if (!confirmed) {
+                    event.preventDefault();
+                }
+            }
+        );
+
+        function checkPasswordMatch() {
+            if (
+                passwordConfirmationInput.value === ''
+            ) {
+                passwordMatchError.style.display = 'none';
+
+                passwordConfirmationInput.classList.remove(
+                    'input-error'
+                );
+
+                return;
+            }
+
+            if (
+                passwordInput.value ===
+                passwordConfirmationInput.value
+            ) {
+                passwordMatchError.style.display = 'none';
+
+                passwordConfirmationInput.classList.remove(
+                    'input-error'
+                );
+            }
+        }
+
+
+        passwordInput.addEventListener(
+            'input',
+            checkPasswordMatch
+        );
+
+        passwordConfirmationInput.addEventListener(
+            'input',
+            checkPasswordMatch
+        );
+
+        function updateFullPreview() {
+
+            // Username
+            const username = usernameInput.value.trim();
+
+            summaryName.textContent =
+                username || 'Username';
+
+            summaryAvatar.textContent =
+                username ?
+                username.charAt(0).toUpperCase() :
+                '?';
+
+
+            // Full Name
+            summaryFullname.textContent =
+                ': ' + (fullnameInput.value || '-');
+
+
+            // Phone
+            summaryPhone.textContent =
+                ': ' + (phoneInput.value || '-');
+
+
+            // Email
+            summaryEmail.textContent =
+                ': ' + (emailInput.value || '-');
+
+
+            // Address
+            summaryAddress.textContent =
+                ': ' + (addressInput.value || '-');
+
+
+            // Role + ID
+            updateRolePreview();
+        }
+
+
+        /*Initialise preview when page opens*/
+
+        updateFullPreview();
     </script>
 
 </body>

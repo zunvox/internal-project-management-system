@@ -134,42 +134,10 @@ class DatabaseSeeder extends Seeder
             'status' => 'Active',
         ]);
 
-        CashFlowCategory::firstOrCreate([
-            'category_name' => 'Client Payment',
-            'cash_flow_type' => 'Cash In',
-        ], [
-            'is_active' => true,
+        $this->call([
+            CashFlowCategorySeeder::class,
+            ClaimCategorySeeder::class,
         ]);
-
-        CashFlowCategory::firstOrCreate([
-            'category_name' => 'Other Income',
-            'cash_flow_type' => 'Cash In',
-        ], [
-            'is_active' => true,
-        ]);
-
-        CashFlowCategory::firstOrCreate([
-            'category_name' => 'Staff Expense',
-            'cash_flow_type' => 'Cash Out',
-        ], [
-            'is_active' => true,
-        ]);
-
-        CashFlowCategory::firstOrCreate([
-            'category_name' => 'Operational Expense',
-            'cash_flow_type' => 'Cash Out',
-        ], [
-            'is_active' => true,
-        ]);
-
-        CashFlowCategory::firstOrCreate([
-            'category_name' => 'Other Expense',
-            'cash_flow_type' => 'Cash Out',
-        ], [
-            'is_active' => true,
-        ]);
-
-        $this->call([ClaimCategorySeeder::class]);
 
     }
 }

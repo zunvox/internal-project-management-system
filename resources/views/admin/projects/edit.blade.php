@@ -565,6 +565,82 @@
             background: #98A2B3;
             border-radius: 8px;
         }
+
+        .milestone-attachment-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 8px;
+        }
+
+        .milestone-attachment-button {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            padding: 6px 10px;
+
+            border: 1px solid #D0D5DD;
+            border-radius: 6px;
+
+            background: #FFFFFF;
+
+            font-size: 10px;
+            color: #344054;
+
+            cursor: pointer;
+        }
+
+        .milestone-attachment-button:hover {
+            background: #F2F4F7;
+        }
+
+        .milestone-attachment-name {
+            max-width: 220px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+
+            font-size: 10px;
+            color: #667085;
+        }
+
+        .milestone-file {
+            margin-top: 6px;
+        }
+
+        .milestone-file a {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+
+            font-size: 11px;
+            color: #1677ff;
+            text-decoration: none;
+        }
+
+        .milestone-file a:hover {
+            text-decoration: underline;
+        }
+
+        .milestone-image {
+            display: block;
+            max-width: 260px;
+            max-height: 180px;
+            width: auto;
+            height: auto;
+            margin-top: 8px;
+            border: 1px solid #D0D5DD;
+            border-radius: 8px;
+            object-fit: contain;
+            cursor: pointer;
+        }
+
+        .milestone-file-name {
+            margin-top: 5px;
+
+            font-size: 10px;
+            color: #667085;
+        }
     </style>
 
 </head>
@@ -574,6 +650,7 @@
     @include('admin.partials.admin-topbar')
     @include('admin.partials.admin-nav')
 
+    <div class="stage">
     <div class="page">
 
         <div class="breadcrumb">Projects &gt; <span
@@ -800,9 +877,40 @@
 
                             </div>
 
-                            <div class="milestone-description">
-                                {{ $milestone->description }}
-                            </div>
+                            @if ($milestone->description)
+                                <div class="milestone-description">
+                                    {{ $milestone->description }}
+                                </div>
+                            @endif
+
+                            @if ($milestone->attachment_path)
+                                @php
+                                    $extension = strtolower(pathinfo($milestone->attachment_name, PATHINFO_EXTENSION));
+
+                                    $isImage = in_array($extension, ['jpg', 'jpeg', 'png', 'webp']);
+                                @endphp
+
+                                <div class="milestone-file">
+
+                                    @if ($isImage)
+                                        <a href="{{ asset('storage/' . $milestone->attachment_path) }}"
+                                            target="_blank" rel="noopener">
+                                            <img src="{{ asset('storage/' . $milestone->attachment_path) }}"
+                                                alt="{{ $milestone->attachment_name }}" class="milestone-image">
+                                        </a>
+
+                                        <div class="milestone-file-name">
+                                            📎 {{ $milestone->attachment_name }}
+                                        </div>
+                                    @else
+                                        <a href="{{ asset('storage/' . $milestone->attachment_path) }}"
+                                            target="_blank" rel="noopener">
+                                            📎 {{ $milestone->attachment_name }}
+                                        </a>
+                                    @endif
+
+                                </div>
+                            @endif
 
                         </div>
 
@@ -819,15 +927,34 @@
 
         </div>
 
-        <form id="milestone-form" class="milestone-comment-form" method="POST">
+        <form id="milestone-form" class="milestone-comment-form" method="POST"
+            action="{{ route('admin.projects.milestones.store', $project) }}" enctype="multipart/form-data">
             @csrf
 
-            <textarea name="description" id="milestone-description" placeholder="Enter progress..." required></textarea>
+            <textarea name="description" id="milestone-description" placeholder="Enter progress..."></textarea>
+
+            <div class="milestone-attachment-row">
+
+                <label for="admin-milestone-attachment" class="milestone-attachment-button">
+                    📎 Attach file
+                </label>
+
+                <input type="file" name="attachment" id="admin-milestone-attachment"
+                    accept=".pdf,.jpg,.jpeg,.png,.doc,.docx,.xls,.xlsx,.zip" hidden>
+
+                <span id="admin-milestone-attachment-name" class="milestone-attachment-name"></span>
+
+                <button type="submit" class="milestone-post-button">
+                    Post
+                </button>
+
+            </div>
         </form>
 
     </div>
 
     </div>
+</div>
 
     <script>
         const assignedList = document.getElementById('assigned-list');
@@ -1030,6 +1157,410 @@
                         'none';
                 });
         });
+
+        /*Milestone*/
+
+        const milestoneForm =
+            document.getElementById('milestone-form');
+
+        const milestoneDescription =
+            document.getElementById('milestone-description');
+
+        const milestoneAttachment =
+            document.getElementById('admin-milestone-attachment');
+
+        const milestoneAttachmentName =
+            document.getElementById(
+                'admin-milestone-attachment-name'
+            );
+
+        const milestoneList =
+            document.getElementById('milestone-list');
+
+
+        /*Show selected attachment name*/
+
+        milestoneAttachment.addEventListener(
+            'change',
+            function() {
+                if (this.files.length > 0) {
+                    milestoneAttachmentName.textContent =
+                        this.files[0].name;
+                } else {
+                    milestoneAttachmentName.textContent = '';
+                }
+            }
+        );
+
+
+        /*Submit milestone*/
+
+        async function submitMilestone() {
+            const description =
+                milestoneDescription.value.trim();
+
+            const hasAttachment =
+                milestoneAttachment.files.length > 0;
+
+            if (
+                description === '' &&
+                !hasAttachment
+            ) {
+                return;
+            }
+
+            const formData =
+                new FormData(milestoneForm);
+
+            if (!formData.has('_token')) {
+                formData.append(
+                    '_token',
+                    document.querySelector(
+                        'meta[name="csrf-token"]'
+                    ).content
+                );
+            }
+
+            try {
+                const response = await fetch(
+                    milestoneForm.action, {
+                        method: 'POST',
+
+                        headers: {
+                            'Accept': 'application/json',
+                            'X-Requested-With': 'XMLHttpRequest',
+                        },
+
+                        credentials: 'same-origin',
+
+                        body: formData,
+                    }
+                );
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    alert(
+                        data.message ??
+                        'Unable to add milestone.'
+                    );
+
+                    return;
+                }
+
+                addMilestoneToList(
+                    data.milestone
+                );
+
+                milestoneDescription.value = '';
+                milestoneAttachment.value = '';
+                milestoneAttachmentName.textContent = '';
+
+                milestoneDescription.focus();
+
+            } catch (error) {
+                console.error(error);
+
+                alert(
+                    'Unable to add milestone.'
+                );
+            }
+        }
+
+
+        /*Enter to post*/
+
+        milestoneDescription.addEventListener(
+            'keydown',
+            function(event) {
+
+                if (
+                    event.key === 'Enter' &&
+                    !event.shiftKey
+                ) {
+                    event.preventDefault();
+
+                    submitMilestone();
+                }
+            }
+        );
+
+
+        /*Prevent normal form submission*/
+
+        milestoneForm.addEventListener(
+            'submit',
+            function(event) {
+                event.preventDefault();
+
+                submitMilestone();
+            }
+        );
+
+
+        /*Add milestone to page without refresh*/
+
+        function addMilestoneToList(milestone) {
+
+            const emptyMessage =
+                document.getElementById(
+                    'milestone-empty'
+                );
+
+            if (emptyMessage) {
+                emptyMessage.remove();
+            }
+
+            const item =
+                document.createElement('div');
+
+            item.className =
+                'milestone-item';
+
+            item.dataset.milestoneId =
+                milestone.id;
+
+            const descriptionHtml =
+                milestone.description ?
+                `
+                <div class="milestone-description">
+                    ${escapeHtml(
+                        milestone.description
+                    )}
+                </div>
+            ` :
+                '';
+
+            let attachmentHtml = '';
+
+            if (
+                milestone.attachment_url &&
+                milestone.attachment_name
+            ) {
+                const extension =
+                    milestone.attachment_name
+                    .split('.')
+                    .pop()
+                    .toLowerCase();
+
+                const imageExtensions = [
+                    'jpg',
+                    'jpeg',
+                    'png',
+                    'webp'
+                ];
+
+                const isImage =
+                    imageExtensions.includes(extension);
+
+                if (isImage) {
+                    attachmentHtml = `
+            <div class="milestone-file">
+
+                <a
+                    href="${milestone.attachment_url}"
+                    target="_blank"
+                    rel="noopener"
+                >
+                    <img
+                        src="${milestone.attachment_url}"
+                        alt="${escapeHtml(
+                            milestone.attachment_name
+                        )}"
+                        class="milestone-image"
+                    >
+                </a>
+
+                <div class="milestone-file-name">
+                    📎 ${escapeHtml(
+                        milestone.attachment_name
+                    )}
+                </div>
+
+            </div>
+        `;
+                } else {
+                    attachmentHtml = `
+            <div class="milestone-file">
+
+                <a
+                    href="${milestone.attachment_url}"
+                    target="_blank"
+                    rel="noopener"
+                >
+                    📎 ${escapeHtml(
+                        milestone.attachment_name
+                    )}
+                </a>
+
+            </div>
+        `;
+                }
+            }
+
+            item.innerHTML = `
+        <div class="milestone-row">
+
+            <div class="milestone-indicator"></div>
+
+            <div class="milestone-content">
+
+                <div class="milestone-comment-header">
+
+                    <div>
+                        <strong class="milestone-user">
+                            ${escapeHtml(
+                                milestone.user
+                            )}
+                        </strong>
+
+                        <span class="milestone-date">
+                            ${escapeHtml(
+                                milestone.created_at
+                            )}
+                        </span>
+                    </div>
+
+                    <button
+                        type="button"
+                        class="milestone-delete-btn"
+                        data-milestone-id="${milestone.id}"
+                        title="Delete milestone"
+                    >
+                        &times;
+                    </button>
+
+                </div>
+
+                ${descriptionHtml}
+                ${attachmentHtml}
+
+            </div>
+        </div>
+    `;
+
+            milestoneList.appendChild(item);
+
+            milestoneList.scrollTop =
+                milestoneList.scrollHeight;
+        }
+
+
+        /*Escape output inserted into HTML*/
+
+        function escapeHtml(value) {
+            const div =
+                document.createElement('div');
+
+            div.textContent =
+                value ?? '';
+
+            return div.innerHTML;
+        }
+
+        /*Delete milestone*/
+
+        milestoneList.addEventListener(
+            'click',
+            async function(event) {
+
+                const deleteButton =
+                    event.target.closest(
+                        '.milestone-delete-btn'
+                    );
+
+                if (!deleteButton) {
+                    return;
+                }
+
+                const milestoneId =
+                    deleteButton.dataset.milestoneId;
+
+                const confirmed = confirm(
+                    'Are you sure you want to delete this milestone?'
+                );
+
+                if (!confirmed) {
+                    return;
+                }
+
+                const deleteUrl =
+                    `{{ url('/admin/projects/' . $project->id . '/milestones') }}/${milestoneId}`;
+
+                try {
+                    const response = await fetch(
+                        deleteUrl, {
+                            method: 'DELETE',
+
+                            headers: {
+                                'Accept': 'application/json',
+                                'X-Requested-With': 'XMLHttpRequest',
+                                'X-CSRF-TOKEN': document.querySelector(
+                                    'meta[name="csrf-token"]'
+                                ).content,
+                            },
+
+                            credentials: 'same-origin',
+                        }
+                    );
+
+                    const data =
+                        await response.json();
+
+                    if (!response.ok) {
+                        alert(
+                            data.message ??
+                            'Unable to delete milestone.'
+                        );
+
+                        return;
+                    }
+
+                    const milestoneItem =
+                        milestoneList.querySelector(
+                            `[data-milestone-id="${milestoneId}"]`
+                        );
+
+                    if (milestoneItem) {
+                        milestoneItem.remove();
+                    }
+
+                    /*Show empty message if no milestones remain*/
+
+                    const remainingMilestones =
+                        milestoneList.querySelectorAll(
+                            '.milestone-item'
+                        );
+
+                    if (
+                        remainingMilestones.length === 0
+                    ) {
+                        const emptyMessage =
+                            document.createElement('div');
+
+                        emptyMessage.className =
+                            'milestone-empty';
+
+                        emptyMessage.id =
+                            'milestone-empty';
+
+                        emptyMessage.textContent =
+                            'No milestone updates yet.';
+
+                        milestoneList.appendChild(
+                            emptyMessage
+                        );
+                    }
+
+                } catch (error) {
+                    console.error(error);
+
+                    alert(
+                        'Unable to delete milestone.'
+                    );
+                }
+            }
+        );
 
         updateAssignedCount();
     </script>
